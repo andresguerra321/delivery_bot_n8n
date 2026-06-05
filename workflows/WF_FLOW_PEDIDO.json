@@ -69,7 +69,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const calc = $('Calculate Total').first().json;\nreturn [{\n  json: {\n    mensaje: '\\u2705 *\\u00a1Pedido confirmado!*\\\\n\\\\n\\u{1F4E6} Orden: #' + calc.orderId + '\\\\n\\u{1F4B0} Total: $' + parseFloat(calc.total).toFixed(2) + '\\\\n\\u{1F4CD} Estado: Recibido\\\\n\\\\nTe notificaremos cuando est\\u00e9 en preparaci\\u00f3n. \\u{1F373}',\n    reply_markup: { inline_keyboard: [[{ text: '\\u{1F3E0} Men\\u00fa Principal', callback_data: 'main_menu' }]] },\n    session_updates: { estado_fsm: 'IDLE', carrito_json: '[]', contexto_json: '{}' }\n  }\n}];\n"
+        "jsCode": "const calc = $('Calculate Total').first().json;\nreturn [{\n  json: {\n    mensaje: '\\u2705 *¡Pedido confirmado!*\\n\\n\\u{1F4E6} Orden: #' + calc.orderId + '\\n\\u{1F4B0} Total: $' + parseFloat(calc.total).toFixed(2) + '\\n\\u{1F4CD} Estado: Recibido\\n\\nTe notificaremos cuando esté en preparación. \\u{1F373}',\n    reply_markup: { inline_keyboard: [[{ text: '\\u{1F3E0} Menú Principal', callback_data: 'main_menu' }]] },\n    session_updates: { estado_fsm: 'IDLE', carrito_json: '[]', contexto_json: '{}' }\n  }\n}];"
       },
       "id": "pedido-success",
       "name": "Format Success",
