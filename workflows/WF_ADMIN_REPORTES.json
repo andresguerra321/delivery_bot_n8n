@@ -16,7 +16,10 @@
       "name": "Cron Trigger",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
-      "position": [220, 300]
+      "position": [
+        220,
+        300
+      ]
     },
     {
       "parameters": {
@@ -26,7 +29,10 @@
       "name": "Get Today Date",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [440, 300]
+      "position": [
+        440,
+        300
+      ]
     },
     {
       "parameters": {
@@ -59,11 +65,14 @@
       "name": "Read Today Orders",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
-      "position": [660, 200],
+      "position": [
+        660,
+        200
+      ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "googleSheetsOAuth2Api",
-          "name": "googleSheetsOAuth2Api"
+          "id": "15AvKlr14Qt1VZsU",
+          "name": "Google Sheets account"
         }
       }
     },
@@ -94,11 +103,14 @@
       "name": "Read Detail Lines",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
-      "position": [660, 400],
+      "position": [
+        660,
+        400
+      ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "googleSheetsOAuth2Api",
-          "name": "googleSheetsOAuth2Api"
+          "id": "15AvKlr14Qt1VZsU",
+          "name": "Google Sheets account"
         }
       }
     },
@@ -110,7 +122,10 @@
       "name": "Calculate Metrics",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [880, 300]
+      "position": [
+        880,
+        300
+      ]
     },
     {
       "parameters": {
@@ -134,11 +149,14 @@
       "name": "Write to REPORTES_CACHE",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
-      "position": [1100, 300],
+      "position": [
+        1100,
+        300
+      ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "googleSheetsOAuth2Api",
-          "name": "googleSheetsOAuth2Api"
+          "id": "15AvKlr14Qt1VZsU",
+          "name": "Google Sheets account"
         }
       }
     },
@@ -161,11 +179,14 @@
       "name": "Read All Menu Items",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
-      "position": [1320, 300],
+      "position": [
+        1320,
+        300
+      ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "googleSheetsOAuth2Api",
-          "name": "googleSheetsOAuth2Api"
+          "id": "15AvKlr14Qt1VZsU",
+          "name": "Google Sheets account"
         }
       }
     },
@@ -177,7 +198,10 @@
       "name": "Check Low Stock",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1540, 300]
+      "position": [
+        1540,
+        300
+      ]
     },
     {
       "parameters": {
@@ -187,7 +211,10 @@
       "name": "Format Report",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1760, 300]
+      "position": [
+        1760,
+        300
+      ]
     },
     {
       "parameters": {
@@ -201,11 +228,14 @@
       "name": "Send Report to Admin",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
-      "position": [1980, 300],
+      "position": [
+        1980,
+        300
+      ],
       "credentials": {
         "telegramApi": {
-          "id": "telegramApi",
-          "name": "telegramApi"
+          "id": "ZK5tkFfqOriXG3BO",
+          "name": "Telegram account"
         }
       }
     }

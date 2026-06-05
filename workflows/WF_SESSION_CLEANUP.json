@@ -16,7 +16,10 @@
       "name": "Cron Trigger",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
-      "position": [220, 300]
+      "position": [
+        220,
+        300
+      ]
     },
     {
       "parameters": {
@@ -37,11 +40,14 @@
       "name": "Read All Sessions",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
-      "position": [440, 300],
+      "position": [
+        440,
+        300
+      ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "googleSheetsOAuth2Api",
-          "name": "googleSheetsOAuth2Api"
+          "id": "15AvKlr14Qt1VZsU",
+          "name": "Google Sheets account"
         }
       }
     },
@@ -53,7 +59,10 @@
       "name": "Filter Expired",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [660, 300]
+      "position": [
+        660,
+        300
+      ]
     },
     {
       "parameters": {
@@ -81,7 +90,10 @@
       "name": "Check If Any Expired",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [880, 300]
+      "position": [
+        880,
+        300
+      ]
     },
     {
       "parameters": {
@@ -93,7 +105,10 @@
       "name": "Loop Over Expired",
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
-      "position": [1100, 200]
+      "position": [
+        1100,
+        200
+      ]
     },
     {
       "parameters": {
@@ -130,7 +145,10 @@
       "name": "Check Cart",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [1320, 200]
+      "position": [
+        1320,
+        200
+      ]
     },
     {
       "parameters": {
@@ -140,7 +158,10 @@
       "name": "Parse Cart Items",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1540, 100]
+      "position": [
+        1540,
+        100
+      ]
     },
     {
       "parameters": {
@@ -169,11 +190,14 @@
       "name": "Read Menu Stock",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
-      "position": [1760, 100],
+      "position": [
+        1760,
+        100
+      ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "googleSheetsOAuth2Api",
-          "name": "googleSheetsOAuth2Api"
+          "id": "15AvKlr14Qt1VZsU",
+          "name": "Google Sheets account"
         }
       }
     },
@@ -212,11 +236,14 @@
       "name": "Restore Stock",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
-      "position": [1980, 100],
+      "position": [
+        1980,
+        100
+      ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "googleSheetsOAuth2Api",
-          "name": "googleSheetsOAuth2Api"
+          "id": "15AvKlr14Qt1VZsU",
+          "name": "Google Sheets account"
         }
       }
     },
@@ -257,11 +284,14 @@
       "name": "Reset Session",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
-      "position": [1540, 380],
+      "position": [
+        1540,
+        380
+      ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "googleSheetsOAuth2Api",
-          "name": "googleSheetsOAuth2Api"
+          "id": "15AvKlr14Qt1VZsU",
+          "name": "Google Sheets account"
         }
       }
     },
@@ -275,11 +305,14 @@
       "name": "Notify User Timeout",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
-      "position": [1760, 380],
+      "position": [
+        1760,
+        380
+      ],
       "credentials": {
         "telegramApi": {
-          "id": "telegramApi",
-          "name": "telegramApi"
+          "id": "ZK5tkFfqOriXG3BO",
+          "name": "Telegram account"
         }
       }
     },
@@ -310,11 +343,14 @@
       "name": "Log Timeout",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
-      "position": [1980, 380],
+      "position": [
+        1980,
+        380
+      ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "googleSheetsOAuth2Api",
-          "name": "googleSheetsOAuth2Api"
+          "id": "15AvKlr14Qt1VZsU",
+          "name": "Google Sheets account"
         }
       }
     },
@@ -326,7 +362,10 @@
       "name": "Summary Log",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [2200, 300]
+      "position": [
+        2200,
+        300
+      ]
     },
     {
       "parameters": {},
@@ -334,7 +373,10 @@
       "name": "No Expired Sessions",
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
-      "position": [1100, 440]
+      "position": [
+        1100,
+        440
+      ]
     }
   ],
   "connections": {

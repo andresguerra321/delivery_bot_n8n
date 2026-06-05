@@ -3,25 +3,78 @@
   "nodes": [
     {
       "parameters": {},
-      "id": "pedido-trigger",
+      "id": "p-trigger",
       "name": "Execute Workflow Trigger",
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1,
       "position": [
-        250,
+        200,
         300
       ]
     },
     {
       "parameters": {
-        "jsCode": "const inputData = $('Execute Workflow Trigger').first().json;\nlet cart = [];\ntry { cart = JSON.parse(inputData.carrito_json || '[]'); } catch(e) {}\nlet total = 0;\ncart.forEach(item => { total += item.qty * item.precio; });\n\nconst now = new Date();\nconst dateStr = now.toISOString().slice(0, 10).replace(/-/g, '');\nconst randomNum = Math.floor(1000 + Math.random() * 9000);\nconst orderId = 'ORD-' + dateStr + '-' + randomNum;\nconst detalles = cart.map(i => i.nombre + ' x' + i.qty).join(', ');\n\nreturn [{ json: {\n  orderId: orderId,\n  total: total,\n  detalles: detalles,\n  carrito_json: inputData.carrito_json || '[]',\n  telegram_id: inputData.telegram_id,\n  chat_id: inputData.chat_id,\n  first_name: inputData.first_name || 'Usuario',\n  fecha: now.toISOString().split('T')[0],\n  hora: now.toTimeString().split(' ')[0]\n}}];\n"
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "1ENztX5Jw-W8upEOijCgdVbi2_cHfBbOO0Y4O0s6rpuw",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "MENU",
+          "mode": "name"
+        },
+        "filtersUI": {
+          "values": []
+        },
+        "options": {}
       },
-      "id": "pedido-calc",
-      "name": "Calculate Total",
+      "id": "p-read-menu",
+      "name": "Read Menu",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        400,
+        300
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "15AvKlr14Qt1VZsU",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputData = $('Execute Workflow Trigger').first().json;\nconst menuItems = $('Read Menu').all().map(i => i.json);\nlet cart = [];\ntry { cart = JSON.parse(inputData.carrito_json || '[]'); } catch(e) {}\n\nconst TAX_RATE = 0.12;\nlet subtotal = 0;\nlet errors = [];\n\nfor (const item of cart) {\n  const menuItem = menuItems.find(m => m.id_producto === item.id);\n  if (!menuItem) {\n    errors.push(item.nombre + ' ya no está disponible');\n    continue;\n  }\n  const stock = parseInt(menuItem.stock);\n  if (stock < item.qty) {\n    errors.push(item.nombre + ': solo quedan ' + stock + ' unidades');\n    continue;\n  }\n  subtotal += item.qty * parseFloat(menuItem.precio);\n}\n\nconst iva = Math.round(subtotal * TAX_RATE * 100) / 100;\nconst total = Math.round((subtotal + iva) * 100) / 100;\n\nconst now = new Date();\nconst dateStr = now.toISOString().slice(0, 10).replace(/-/g, '');\nconst randomNum = Math.floor(1000 + Math.random() * 9000);\nconst orderId = 'ORD-' + dateStr + '-' + randomNum;\nconst detalles = cart.map(i => i.nombre + ' x' + i.qty).join(', ');\n\nreturn [{ json: {\n  valid: errors.length === 0,\n  errors: errors,\n  orderId, subtotal, iva, total, detalles,\n  carrito_json: inputData.carrito_json || '[]',\n  telegram_id: inputData.telegram_id,\n  chat_id: inputData.chat_id,\n  first_name: inputData.first_name || 'Usuario',\n  fecha: now.toISOString().split('T')[0],\n  hora: now.toTimeString().split(' ')[0]\n}}];"
+      },
+      "id": "p-validate",
+      "name": "Validate & Calculate",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        500,
+        600,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.valid }}",
+              "value2": "true"
+            }
+          ]
+        }
+      },
+      "id": "p-check",
+      "name": "Stock OK?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        800,
         300
       ]
     },
@@ -41,24 +94,25 @@
         "columns": {
           "mappingMode": "defineBelow",
           "value": {
-            "id_pedido": "={{ $json.orderId }}",
-            "id_usuario": "={{ $json.telegram_id }}",
-            "detalles_pedido": "={{ $json.detalles }}",
-            "total_pago": "={{ $json.total }}",
+            "id_pedido": "={{ $('Validate & Calculate').first().json.orderId }}",
+            "id_usuario": "={{ $('Validate & Calculate').first().json.telegram_id }}",
+            "detalles_pedido": "={{ $('Validate & Calculate').first().json.detalles }}",
+            "total_pago": "={{ $('Validate & Calculate').first().json.total }}",
             "estado": "RECIBIDO",
-            "fecha": "={{ $json.fecha }}",
-            "hora": "={{ $json.hora }}"
+            "fecha": "={{ $('Validate & Calculate').first().json.fecha }}",
+            "hora": "={{ $('Validate & Calculate').first().json.hora }}",
+            "carrito_json": "={{ $('Validate & Calculate').first().json.carrito_json }}"
           }
         },
         "options": {}
       },
-      "id": "pedido-write",
+      "id": "p-write",
       "name": "Write Pedido",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
       "position": [
-        750,
-        300
+        1000,
+        200
       ],
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -69,15 +123,122 @@
     },
     {
       "parameters": {
-        "jsCode": "const calc = $('Calculate Total').first().json;\nreturn [{\n  json: {\n    mensaje: '\\u2705 *¡Pedido confirmado!*\\n\\n\\u{1F4E6} Orden: #' + calc.orderId + '\\n\\u{1F4B0} Total: $' + parseFloat(calc.total).toFixed(2) + '\\n\\u{1F4CD} Estado: Recibido\\n\\nTe notificaremos cuando esté en preparación. \\u{1F373}',\n    reply_markup: { inline_keyboard: [[{ text: '\\u{1F3E0} Menú Principal', callback_data: 'main_menu' }]] },\n    session_updates: { estado_fsm: 'IDLE', carrito_json: '[]', contexto_json: '{}' }\n  }\n}];"
+        "jsCode": "const calc = $('Validate & Calculate').first().json;\nconst inputData = $('Execute Workflow Trigger').first().json;\n\nconst text = '🛎 *Nuevo Pedido Recibido*\\n\\n📦 Orden: #' + calc.orderId + '\\n👤 ' + calc.first_name + '\\n📋 ' + calc.detalles + '\\n💵 Total: $' + calc.total.toFixed(2);\n\nconst keyboard = {\n  inline_keyboard: [\n    [\n      { text: '🍳 Preparar', callback_data: 'admin_prep_' + calc.orderId },\n      { text: '❌ Rechazar', callback_data: 'admin_reject_' + calc.orderId }\n    ]\n  ]\n};\n\nreturn [{ json: {\n  chat_id: inputData.chat_id,\n  text: text,\n  parse_mode: 'Markdown',\n  reply_markup: keyboard\n}}];"
       },
-      "id": "pedido-success",
+      "id": "p-kitchen-payload",
+      "name": "Kitchen Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot8960050493:AAEvGqqtGGvIjdHDf1fL6rYoMU4ZVRMKYyI/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ chat_id: $json.chat_id, text: $json.text, parse_mode: $json.parse_mode, reply_markup: $json.reply_markup }) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "p-notify-kitchen",
+      "name": "Notify Kitchen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        1400,
+        200
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const menuItems = $('Read Menu').all().map(i => i.json);\nconst calc = $('Validate & Calculate').first().json;\nlet cart = [];\ntry { cart = JSON.parse(calc.carrito_json || '[]'); } catch(e) {}\n\nconst results = [];\nfor (const cartItem of cart) {\n  const menuItem = menuItems.find(m => m.id_producto === cartItem.id);\n  if (menuItem) {\n    results.push({\n      json: {\n        id_producto: cartItem.id,\n        stock: (parseInt(menuItem.stock) - cartItem.qty).toString()\n      }\n    });\n  }\n}\nreturn results.length > 0 ? results : [{ json: { id_producto: 'none', stock: '0' } }];"
+      },
+      "id": "p-prep-deduct",
+      "name": "Prepare Deductions",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1600,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1ENztX5Jw-W8upEOijCgdVbi2_cHfBbOO0Y4O0s6rpuw",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "MENU",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "stock": "={{ $json.stock }}"
+          },
+          "matchingColumns": [
+            "id_producto"
+          ]
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "id_producto",
+              "lookupValue": "={{ $json.id_producto }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "p-deduct-stock",
+      "name": "Deduct Stock",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1800,
+        200
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "15AvKlr14Qt1VZsU",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const calc = $('Validate & Calculate').first().json;\nreturn [{\n  json: {\n    mensaje: '✅ *¡Pedido confirmado!*\\n\\n📦 Orden: #' + calc.orderId + '\\n💰 Subtotal: $' + calc.subtotal.toFixed(2) + '\\n📊 IVA (12%): $' + calc.iva.toFixed(2) + '\\n💵 Total: $' + calc.total.toFixed(2) + '\\n📍 Estado: Recibido\\n\\nTe notificaremos cuando esté en preparación. 🍳',\n    reply_markup: { inline_keyboard: [[{ text: '🏠 Menú Principal', callback_data: 'main_menu' }]] },\n    session_updates: { estado_fsm: 'IDLE', carrito_json: '[]', contexto_json: '{}' }\n  }\n}];"
+      },
+      "id": "p-success",
       "name": "Format Success",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
+        2000,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const calc = $('Validate & Calculate').first().json;\nconst errorList = calc.errors.join('\\n• ');\nreturn [{\n  json: {\n    mensaje: '⚠️ *No se pudo procesar tu pedido*\\n\\n• ' + errorList + '\\n\\nPor favor, ajusta tu carrito e intenta de nuevo.',\n    reply_markup: { inline_keyboard: [\n      [{ text: '🛒 Ver Carrito', callback_data: 'view_cart' }],\n      [{ text: '🏠 Menú Principal', callback_data: 'main_menu' }]\n    ]},\n    session_updates: { estado_fsm: 'CARRITO', carrito_json: calc.carrito_json, contexto_json: '{}' }\n  }\n}];"
+      },
+      "id": "p-error",
+      "name": "Format Error",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
         1000,
-        300
+        450
       ]
     }
   ],
@@ -86,14 +247,36 @@
       "main": [
         [
           {
-            "node": "Calculate Total",
+            "node": "Read Menu",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Calculate Total": {
+    "Read Menu": {
+      "main": [
+        [
+          {
+            "node": "Validate & Calculate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate & Calculate": {
+      "main": [
+        [
+          {
+            "node": "Stock OK?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stock OK?": {
       "main": [
         [
           {
@@ -101,10 +284,61 @@
             "type": "main",
             "index": 0
           }
+        ],
+        [
+          {
+            "node": "Format Error",
+            "type": "main",
+            "index": 0
+          }
         ]
       ]
     },
     "Write Pedido": {
+      "main": [
+        [
+          {
+            "node": "Kitchen Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Kitchen Payload": {
+      "main": [
+        [
+          {
+            "node": "Notify Kitchen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Kitchen": {
+      "main": [
+        [
+          {
+            "node": "Prepare Deductions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Deductions": {
+      "main": [
+        [
+          {
+            "node": "Deduct Stock",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deduct Stock": {
       "main": [
         [
           {

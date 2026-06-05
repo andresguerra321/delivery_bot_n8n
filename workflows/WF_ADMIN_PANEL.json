@@ -3,18 +3,23 @@
   "nodes": [
     {
       "parameters": {
-        "updates": ["callback_query"],
+        "updates": [
+          "callback_query"
+        ],
         "additionalFields": {}
       },
       "id": "a1000000-0000-0000-0000-000000000001",
       "name": "Telegram Trigger",
       "type": "n8n-nodes-base.telegramTrigger",
       "typeVersion": 1.1,
-      "position": [220, 300],
+      "position": [
+        220,
+        300
+      ],
       "credentials": {
         "telegramApi": {
-          "id": "telegramApi",
-          "name": "telegramApi"
+          "id": "ZK5tkFfqOriXG3BO",
+          "name": "Telegram account"
         }
       }
     },
@@ -44,7 +49,10 @@
       "name": "Check Admin Callback",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [440, 300]
+      "position": [
+        440,
+        300
+      ]
     },
     {
       "parameters": {
@@ -54,7 +62,10 @@
       "name": "Parse Admin Action",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [660, 200]
+      "position": [
+        660,
+        200
+      ]
     },
     {
       "parameters": {
@@ -140,7 +151,10 @@
       "name": "State Transition Map",
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3,
-      "position": [880, 200]
+      "position": [
+        880,
+        200
+      ]
     },
     {
       "parameters": {
@@ -169,11 +183,14 @@
       "name": "Read Order - Prep",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
-      "position": [1100, -100],
+      "position": [
+        1100,
+        -100
+      ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "googleSheetsOAuth2Api",
-          "name": "googleSheetsOAuth2Api"
+          "id": "15AvKlr14Qt1VZsU",
+          "name": "Google Sheets account"
         }
       }
     },
@@ -212,11 +229,14 @@
       "name": "Update PEDIDOS - Prep",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
-      "position": [1320, -100],
+      "position": [
+        1320,
+        -100
+      ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "googleSheetsOAuth2Api",
-          "name": "googleSheetsOAuth2Api"
+          "id": "15AvKlr14Qt1VZsU",
+          "name": "Google Sheets account"
         }
       }
     },
@@ -232,11 +252,14 @@
       "name": "Notify User - Prep",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
-      "position": [1540, -100],
+      "position": [
+        1540,
+        -100
+      ],
       "credentials": {
         "telegramApi": {
-          "id": "telegramApi",
-          "name": "telegramApi"
+          "id": "ZK5tkFfqOriXG3BO",
+          "name": "Telegram account"
         }
       }
     },
@@ -278,11 +301,14 @@
       "name": "Update Kitchen Msg - Prep",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
-      "position": [1760, -100],
+      "position": [
+        1760,
+        -100
+      ],
       "credentials": {
         "telegramApi": {
-          "id": "telegramApi",
-          "name": "telegramApi"
+          "id": "ZK5tkFfqOriXG3BO",
+          "name": "Telegram account"
         }
       }
     },
@@ -313,11 +339,14 @@
       "name": "Read Order - Enroute",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
-      "position": [1100, 100],
+      "position": [
+        1100,
+        100
+      ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "googleSheetsOAuth2Api",
-          "name": "googleSheetsOAuth2Api"
+          "id": "15AvKlr14Qt1VZsU",
+          "name": "Google Sheets account"
         }
       }
     },
@@ -356,11 +385,14 @@
       "name": "Update PEDIDOS - Enroute",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
-      "position": [1320, 100],
+      "position": [
+        1320,
+        100
+      ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "googleSheetsOAuth2Api",
-          "name": "googleSheetsOAuth2Api"
+          "id": "15AvKlr14Qt1VZsU",
+          "name": "Google Sheets account"
         }
       }
     },
@@ -376,11 +408,14 @@
       "name": "Notify User - Enroute",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
-      "position": [1540, 100],
+      "position": [
+        1540,
+        100
+      ],
       "credentials": {
         "telegramApi": {
-          "id": "telegramApi",
-          "name": "telegramApi"
+          "id": "ZK5tkFfqOriXG3BO",
+          "name": "Telegram account"
         }
       }
     },
@@ -416,11 +451,14 @@
       "name": "Update Kitchen Msg - Enroute",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
-      "position": [1760, 100],
+      "position": [
+        1760,
+        100
+      ],
       "credentials": {
         "telegramApi": {
-          "id": "telegramApi",
-          "name": "telegramApi"
+          "id": "ZK5tkFfqOriXG3BO",
+          "name": "Telegram account"
         }
       }
     },
@@ -451,11 +489,14 @@
       "name": "Read Order - Delivered",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
-      "position": [1100, 300],
+      "position": [
+        1100,
+        300
+      ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "googleSheetsOAuth2Api",
-          "name": "googleSheetsOAuth2Api"
+          "id": "15AvKlr14Qt1VZsU",
+          "name": "Google Sheets account"
         }
       }
     },
@@ -495,11 +536,14 @@
       "name": "Update PEDIDOS - Delivered",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
-      "position": [1320, 300],
+      "position": [
+        1320,
+        300
+      ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "googleSheetsOAuth2Api",
-          "name": "googleSheetsOAuth2Api"
+          "id": "15AvKlr14Qt1VZsU",
+          "name": "Google Sheets account"
         }
       }
     },
@@ -515,11 +559,14 @@
       "name": "Notify User - Delivered",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
-      "position": [1540, 300],
+      "position": [
+        1540,
+        300
+      ],
       "credentials": {
         "telegramApi": {
-          "id": "telegramApi",
-          "name": "telegramApi"
+          "id": "ZK5tkFfqOriXG3BO",
+          "name": "Telegram account"
         }
       }
     },
@@ -539,11 +586,14 @@
       "name": "Update Kitchen Msg - Delivered",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
-      "position": [1760, 300],
+      "position": [
+        1760,
+        300
+      ],
       "credentials": {
         "telegramApi": {
-          "id": "telegramApi",
-          "name": "telegramApi"
+          "id": "ZK5tkFfqOriXG3BO",
+          "name": "Telegram account"
         }
       }
     },
@@ -555,7 +605,10 @@
       "name": "Prepare Loyalty Points",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1980, 300]
+      "position": [
+        1980,
+        300
+      ]
     },
     {
       "parameters": {
@@ -584,11 +637,14 @@
       "name": "Read User Loyalty",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
-      "position": [2200, 300],
+      "position": [
+        2200,
+        300
+      ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "googleSheetsOAuth2Api",
-          "name": "googleSheetsOAuth2Api"
+          "id": "15AvKlr14Qt1VZsU",
+          "name": "Google Sheets account"
         }
       }
     },
@@ -627,11 +683,14 @@
       "name": "Update Loyalty Points",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
-      "position": [2420, 300],
+      "position": [
+        2420,
+        300
+      ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "googleSheetsOAuth2Api",
-          "name": "googleSheetsOAuth2Api"
+          "id": "15AvKlr14Qt1VZsU",
+          "name": "Google Sheets account"
         }
       }
     },
@@ -662,11 +721,14 @@
       "name": "Read Order - Reject",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
-      "position": [1100, 540],
+      "position": [
+        1100,
+        540
+      ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "googleSheetsOAuth2Api",
-          "name": "googleSheetsOAuth2Api"
+          "id": "15AvKlr14Qt1VZsU",
+          "name": "Google Sheets account"
         }
       }
     },
@@ -705,11 +767,14 @@
       "name": "Update PEDIDOS - Reject",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
-      "position": [1320, 540],
+      "position": [
+        1320,
+        540
+      ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "googleSheetsOAuth2Api",
-          "name": "googleSheetsOAuth2Api"
+          "id": "15AvKlr14Qt1VZsU",
+          "name": "Google Sheets account"
         }
       }
     },
@@ -721,7 +786,10 @@
       "name": "Parse Cart for Stock Restore",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1540, 540]
+      "position": [
+        1540,
+        540
+      ]
     },
     {
       "parameters": {
@@ -749,7 +817,10 @@
       "name": "Has Items to Restore",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [1760, 540]
+      "position": [
+        1760,
+        540
+      ]
     },
     {
       "parameters": {
@@ -778,11 +849,14 @@
       "name": "Read Menu Item Stock",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
-      "position": [1980, 440],
+      "position": [
+        1980,
+        440
+      ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "googleSheetsOAuth2Api",
-          "name": "googleSheetsOAuth2Api"
+          "id": "15AvKlr14Qt1VZsU",
+          "name": "Google Sheets account"
         }
       }
     },
@@ -821,11 +895,14 @@
       "name": "Restore Stock",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
-      "position": [2200, 440],
+      "position": [
+        2200,
+        440
+      ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "googleSheetsOAuth2Api",
-          "name": "googleSheetsOAuth2Api"
+          "id": "15AvKlr14Qt1VZsU",
+          "name": "Google Sheets account"
         }
       }
     },
@@ -841,11 +918,14 @@
       "name": "Notify User - Reject",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
-      "position": [1540, 700],
+      "position": [
+        1540,
+        700
+      ],
       "credentials": {
         "telegramApi": {
-          "id": "telegramApi",
-          "name": "telegramApi"
+          "id": "ZK5tkFfqOriXG3BO",
+          "name": "Telegram account"
         }
       }
     },
@@ -860,11 +940,14 @@
       "name": "Answer Callback Query",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
-      "position": [660, 400],
+      "position": [
+        660,
+        400
+      ],
       "credentials": {
         "telegramApi": {
-          "id": "telegramApi",
-          "name": "telegramApi"
+          "id": "ZK5tkFfqOriXG3BO",
+          "name": "Telegram account"
         }
       }
     },
@@ -874,7 +957,10 @@
       "name": "Stop - Not Admin",
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
-      "position": [660, 500]
+      "position": [
+        660,
+        500
+      ]
     },
     {
       "parameters": {
@@ -884,7 +970,10 @@
       "name": "Error Handler",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [220, 700]
+      "position": [
+        220,
+        700
+      ]
     },
     {
       "parameters": {
@@ -908,11 +997,14 @@
       "name": "Log Error to Sheet",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
-      "position": [440, 700],
+      "position": [
+        440,
+        700
+      ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "googleSheetsOAuth2Api",
-          "name": "googleSheetsOAuth2Api"
+          "id": "15AvKlr14Qt1VZsU",
+          "name": "Google Sheets account"
         }
       }
     },
@@ -928,11 +1020,14 @@
       "name": "Notify Admin Error",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
-      "position": [660, 700],
+      "position": [
+        660,
+        700
+      ],
       "credentials": {
         "telegramApi": {
-          "id": "telegramApi",
-          "name": "telegramApi"
+          "id": "ZK5tkFfqOriXG3BO",
+          "name": "Telegram account"
         }
       }
     }
