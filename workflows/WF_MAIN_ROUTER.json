@@ -1,0 +1,683 @@
+{
+  "name": "WF_MAIN_ROUTER",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message",
+          "callback_query"
+        ],
+        "additionalFields": {}
+      },
+      "id": "3536c1ac-f79c-4d4f-81d6-d15ad9a52cf3",
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1,
+      "position": [
+        -16,
+        608
+      ],
+      "webhookId": "722f0e8a-874a-4b70-863d-8387268ac0aa",
+      "credentials": {
+        "telegramApi": {
+          "id": "ZK5tkFfqOriXG3BO",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.message || $input.first().json.callback_query;\nreturn [{\n  json: {\n    telegram_id: body.from.id,\n    chat_id: body.message ? body.message.chat.id : body.chat.id,\n    text: body.text || '',\n    callback_data: body.data || '',\n    callback_query_id: $input.first().json.callback_query ? $input.first().json.callback_query.id : '',\n    message_id: body.message_id || (body.message ? body.message.message_id : ''),\n    first_name: body.from.first_name,\n    username: body.from.username\n  }\n}];"
+      },
+      "id": "6a7b8906-f491-46ba-94df-538b0ced1cc1",
+      "name": "Extract Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        192,
+        608
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.text }}",
+              "value2": "/start"
+            },
+            {
+              "value1": "={{ $json.text }}",
+              "value2": "/cancelar"
+            }
+          ]
+        },
+        "combineOperation": "any"
+      },
+      "id": "9cef361f-f4e9-4ca6-8e7e-25c6b1febf4a",
+      "name": "Check Reset Commands",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        384,
+        608
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "=1ENztX5Jw-W8upEOijCgdVbi2_cHfBbOO0Y4O0s6rpuw",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1063806762,
+          "mode": "list",
+          "cachedResultName": "SESSIONS",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ENztX5Jw-W8upEOijCgdVbi2_cHfBbOO0Y4O0s6rpuw/edit#gid=1063806762"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "=telegram_id",
+              "lookupValue": "={{ $('Extract Data').item.json.telegram_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "8ac73233-5fb5-484a-aeec-96ceedd18df2",
+      "name": "Load Session",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        592,
+        768
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "15AvKlr14Qt1VZsU",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{ $json.estado_fsm }}",
+        "rules": {
+          "rules": [
+            {
+              "operation": "equal",
+              "value2": "TRACK_ORDER",
+              "output": 1
+            },
+            {
+              "operation": "equal",
+              "value2": "IDLE",
+              "output": 2
+            },
+            {
+              "operation": "equal",
+              "value2": "SELECCION_CANTIDAD",
+              "output": 3
+            },
+            {
+              "operation": "equal",
+              "value2": "CARRITO",
+              "output": 3
+            }
+          ]
+        },
+        "fallbackOutput": 0
+      },
+      "id": "e3e255f7-9cd2-4960-9d92-1b5781cdb954",
+      "name": "FSM Router",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [
+        784,
+        768
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "eLdfA8OQMiTKeEs3",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/eLdfA8OQMiTKeEs3",
+          "cachedResultName": "WF_FLOW_MENU"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "telegram_id": "={{ $('Extract Data').first().json.telegram_id }}",
+            "chat_id": "={{ $('Extract Data').first().json.chat_id }}",
+            "text": "={{ $('Extract Data').first().json.text }}",
+            "callback_data": "={{ $('Extract Data').first().json.callback_data }}",
+            "estado_fsm": "={{ $json.estado_fsm }}",
+            "carrito_json": "={{ $json.carrito_json }}",
+            "contexto_json": "={{ $json.contexto_json }}"
+          },
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        992,
+        560
+      ],
+      "id": "0434aba9-057f-47dc-9357-aba010d8e7f9",
+      "name": "Call 'WF_FLOW_MENU'"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "fDg6d7xmvGO0xZ8X",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/fDg6d7xmvGO0xZ8X",
+          "cachedResultName": "WF_FLOW_ESTADO"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "telegram_id": "={{ $('Extract Data').first().json.telegram_id }}",
+            "chat_id": "={{ $('Extract Data').first().json.chat_id }}",
+            "text": "={{ $('Extract Data').first().json.text }}",
+            "callback_data": "={{ $('Extract Data').first().json.callback_data }}",
+            "estado_fsm": "={{ $json.estado_fsm }}",
+            "carrito_json": "={{ $json.carrito_json }}",
+            "contexto_json": "={{ $json.contexto_json }}"
+          },
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        992,
+        672
+      ],
+      "id": "0e3b1a34-ce5b-4b78-a03b-467ab42bf7f9",
+      "name": "Call 'WF_FLOW_ESTADO'"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "XDhGzg4ojSAY9qLS",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/XDhGzg4ojSAY9qLS",
+          "cachedResultName": "WF_FLOW_PEDIDO"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "telegram_id": "={{ $('Extract Data').first().json.telegram_id }}",
+            "chat_id": "={{ $('Extract Data').first().json.chat_id }}",
+            "text": "={{ $('Extract Data').first().json.text }}",
+            "callback_data": "={{ $('Extract Data').first().json.callback_data }}",
+            "estado_fsm": "={{ $json.estado_fsm }}",
+            "carrito_json": "={{ $json.carrito_json }}",
+            "contexto_json": "={{ $json.contexto_json }}"
+          },
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        992,
+        864
+      ],
+      "id": "8aaaebc3-8fce-4d29-a005-75a50bb24b3c",
+      "name": "Call 'WF_FLOW_PEDIDO'"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "bNsLJTYvlHImBHrS",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/bNsLJTYvlHImBHrS",
+          "cachedResultName": "WF_FLOW_CARRITO"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "telegram_id": "={{ $('Extract Data').first().json.telegram_id }}",
+            "chat_id": "={{ $('Extract Data').first().json.chat_id }}",
+            "text": "={{ $('Extract Data').first().json.text }}",
+            "callback_data": "={{ $('Extract Data').first().json.callback_data }}",
+            "estado_fsm": "={{ $json.estado_fsm }}",
+            "carrito_json": "={{ $json.carrito_json }}",
+            "contexto_json": "={{ $json.contexto_json }}"
+          },
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        992,
+        1040
+      ],
+      "id": "dfb72b94-f600-4070-8ff3-b9f646736533",
+      "name": "Call 'WF_FLOW_CARRITO"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1ENztX5Jw-W8upEOijCgdVbi2_cHfBbOO0Y4O0s6rpuw",
+          "mode": "list",
+          "cachedResultName": "Hoja de cálculo sin título",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ENztX5Jw-W8upEOijCgdVbi2_cHfBbOO0Y4O0s6rpuw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1063806762,
+          "mode": "list",
+          "cachedResultName": "SESSIONS",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ENztX5Jw-W8upEOijCgdVbi2_cHfBbOO0Y4O0s6rpuw/edit#gid=1063806762"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "telegram_id": "={{ $('Extract Data').first().json.telegram_id }}",
+            "estado_fsm": "={{ $json.session_updates.estado_fsm }}",
+            "carrito_json": "={{ $json.session_updates.carrito_json }}",
+            "contexto_json": "={{ $json.session_updates.contexto_json }}",
+            "ultimo_cambio": "={{ new Date().toISOString() }}",
+            "ttl_expira": "="
+          },
+          "matchingColumns": [
+            "telegram_id"
+          ],
+          "schema": [
+            {
+              "id": "telegram_id",
+              "displayName": "telegram_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "estado_fsm",
+              "displayName": "estado_fsm",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "carrito_json",
+              "displayName": "carrito_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "contexto_json",
+              "displayName": "contexto_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ultimo_cambio",
+              "displayName": "ultimo_cambio",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ttl_expira",
+              "displayName": "ttl_expira",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "text",
+              "displayName": "text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "replyMarkup",
+              "displayName": "replyMarkup",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "38d025b2-3ab8-40bc-a606-f56c4b99ce1e",
+      "name": "Update Session",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        1200,
+        768
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "15AvKlr14Qt1VZsU",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const chatId = $('Extract Data').first().json.chat_id;\nconst subworkflows = [\n  {name: \"Call 'WF_FLOW_MENU'\"},\n  {name: \"Call 'WF_FLOW_ESTADO'\"},\n  {name: \"Call 'WF_FLOW_PEDIDO'\"},\n  {name: \"Call 'WF_FLOW_CARRITO\"}\n];\nlet mensaje = 'Mensaje por defecto';\nlet replyMarkup = {};\nfor (const sw of subworkflows) {\n  try {\n    const data = $(sw.name).first();\n    if (data) {\n      mensaje = data.json.mensaje || mensaje;\n      replyMarkup = data.json.reply_markup || replyMarkup;\n      break;\n    }\n  } catch(e) { continue; }\n}\nreturn [{ json: { chat_id: chatId, text: mensaje, reply_markup: replyMarkup } }];"
+      },
+      "id": "64868f78-b912-48d7-870f-eb8aef8a2532",
+      "name": "Prepare Telegram Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1408,
+        768
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot8960050493:AAEvGqqtGGvIjdHDf1fL6rYoMU4ZVRMKYyI/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ chat_id: $json.chat_id, text: $json.text, reply_markup: $json.reply_markup, parse_mode: 'Markdown' }) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000,
+      "id": "e0d93c13-2b0c-40ce-8ede-dfd5c943903f",
+      "name": "Send Telegram Message (HTTP)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        1600,
+        768
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot8960050493:AAEvGqqtGGvIjdHDf1fL6rYoMU4ZVRMKYyI/answerCallbackQuery",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ callback_query_id: $('Extract Data').first().json.callback_query_id }) }}",
+        "options": {}
+      },
+      "id": "e74511a1-41a8-4535-99e1-236d6ba41ac6",
+      "name": "Answer Callback (HTTP)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        384,
+        448
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.callback_query_id }}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        }
+      },
+      "id": "3accf609-85c3-40c9-8c3d-56c335e5600b",
+      "name": "Has Callback Query?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        192,
+        448
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Extract Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Data": {
+      "main": [
+        [
+          {
+            "node": "Check Reset Commands",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Has Callback Query?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Reset Commands": {
+      "main": [
+        [
+          {
+            "node": "Call 'WF_FLOW_MENU'",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Load Session",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Session": {
+      "main": [
+        [
+          {
+            "node": "FSM Router",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FSM Router": {
+      "main": [
+        [
+          {
+            "node": "Call 'WF_FLOW_MENU'",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Call 'WF_FLOW_ESTADO'",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Call 'WF_FLOW_PEDIDO'",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Call 'WF_FLOW_CARRITO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'WF_FLOW_MENU'": {
+      "main": [
+        [
+          {
+            "node": "Update Session",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'WF_FLOW_ESTADO'": {
+      "main": [
+        [
+          {
+            "node": "Update Session",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'WF_FLOW_PEDIDO'": {
+      "main": [
+        [
+          {
+            "node": "Update Session",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'WF_FLOW_CARRITO": {
+      "main": [
+        [
+          {
+            "node": "Update Session",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Session": {
+      "main": [
+        [
+          {
+            "node": "Prepare Telegram Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Telegram Payload": {
+      "main": [
+        [
+          {
+            "node": "Send Telegram Message (HTTP)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Callback Query?": {
+      "main": [
+        [
+          {
+            "node": "Answer Callback (HTTP)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "a588aabe-bcc7-4833-b3fb-932dbc549076",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "299e35ebd91eed53cf15d79c3470f1d21bc49e880bfdffa38e7da52cebfa1391"
+  },
+  "nodeGroups": [],
+  "id": "a1acyRcMJVrfYCcr",
+  "tags": []
+}

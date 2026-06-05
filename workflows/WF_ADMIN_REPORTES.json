@@ -1,0 +1,345 @@
+{
+  "name": "WF_ADMIN_REPORTES",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "55 23 * * *"
+            }
+          ]
+        }
+      },
+      "id": "b1000000-0000-0000-0000-000000000001",
+      "name": "Cron Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [220, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Calculate today's date in YYYY-MM-DD format\nconst today = new Date();\nconst yyyy = today.getFullYear();\nconst mm = String(today.getMonth() + 1).padStart(2, '0');\nconst dd = String(today.getDate()).padStart(2, '0');\nreturn [{ json: { fecha_hoy: `${yyyy}-${mm}-${dd}` } }];"
+      },
+      "id": "b1000000-0000-0000-0000-000000000002",
+      "name": "Get Today Date",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, 300]
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SPREADSHEET_ID_HERE",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "PEDIDOS",
+          "mode": "name"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "fecha",
+              "lookupValue": "={{ $json.fecha_hoy }}"
+            },
+            {
+              "lookupColumn": "estado",
+              "lookupValue": "ENTREGADO"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b1000000-0000-0000-0000-000000000003",
+      "name": "Read Today Orders",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [660, 200],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "googleSheetsOAuth2Api",
+          "name": "googleSheetsOAuth2Api"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SPREADSHEET_ID_HERE",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "DETALLE_LINEAS",
+          "mode": "name"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "fecha",
+              "lookupValue": "={{ $('Get Today Date').first().json.fecha_hoy }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b1000000-0000-0000-0000-000000000004",
+      "name": "Read Detail Lines",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [660, 400],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "googleSheetsOAuth2Api",
+          "name": "googleSheetsOAuth2Api"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const orders = $('Read Today Orders').all();\nconst details = $('Read Detail Lines').all();\n\n// Total sales\nconst totalVentas = orders.reduce((sum, o) => sum + parseFloat(o.json.total_pago || 0), 0);\nconst numPedidos = orders.length;\n\n// Product star (most sold)\nconst productCount = {};\ndetails.forEach(d => {\n  const name = d.json.nombre;\n  const qty = parseInt(d.json.cantidad || 0);\n  productCount[name] = (productCount[name] || 0) + qty;\n});\nconst sorted = Object.entries(productCount).sort((a, b) => b[1] - a[1]);\nconst productoEstrella = sorted[0] ? sorted[0][0] : 'N/A';\nconst cantidadEstrella = sorted[0] ? sorted[0][1] : 0;\n\n// Peak hour\nconst hourCount = {};\norders.forEach(o => {\n  const hour = (o.json.hora || '00:00').split(':')[0];\n  hourCount[hour] = (hourCount[hour] || 0) + 1;\n});\nconst peakHour = Object.entries(hourCount).sort((a, b) => b[1] - a[1])[0];\nconst horaPico = peakHour ? `${peakHour[0]}:00-${parseInt(peakHour[0]) + 1}:00` : 'N/A';\n\nreturn [{\n  json: {\n    fecha: new Date().toISOString().slice(0, 10),\n    total_ventas: totalVentas.toFixed(2),\n    num_pedidos: numPedidos,\n    producto_estrella: productoEstrella,\n    cantidad_estrella: cantidadEstrella,\n    hora_pico: horaPico,\n    generado_en: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "b1000000-0000-0000-0000-000000000005",
+      "name": "Calculate Metrics",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [880, 300]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SPREADSHEET_ID_HERE",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "REPORTES_CACHE",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData"
+        },
+        "options": {}
+      },
+      "id": "b1000000-0000-0000-0000-000000000006",
+      "name": "Write to REPORTES_CACHE",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [1100, 300],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "googleSheetsOAuth2Api",
+          "name": "googleSheetsOAuth2Api"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SPREADSHEET_ID_HERE",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "MENU",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "b1000000-0000-0000-0000-000000000007",
+      "name": "Read All Menu Items",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [1320, 300],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "googleSheetsOAuth2Api",
+          "name": "googleSheetsOAuth2Api"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Filter menu items with low stock\nconst menuItems = $('Read All Menu Items').all();\nconst lowStock = menuItems.filter(item => {\n  const stock = parseInt(item.json.stock || 0);\n  const stockMinimo = parseInt(item.json.stock_minimo || 0);\n  const activo = String(item.json.activo).toUpperCase();\n  return stock <= stockMinimo && (activo === 'TRUE' || activo === 'SI' || activo === '1');\n});\n\nreturn [{\n  json: {\n    low_stock_items: lowStock.map(item => ({\n      nombre: item.json.nombre,\n      stock: parseInt(item.json.stock || 0)\n    }))\n  }\n}];"
+      },
+      "id": "b1000000-0000-0000-0000-000000000008",
+      "name": "Check Low Stock",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1540, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Format the daily report message\nconst metrics = $('Calculate Metrics').first().json;\nconst lowStockData = $('Check Low Stock').first().json.low_stock_items;\n\nlet lowStockSection = '';\nif (lowStockData && lowStockData.length > 0) {\n  const lines = lowStockData.map(item => `• ${item.nombre}: ${item.stock} restantes`);\n  lowStockSection = `\\n\\n⚠️ *Productos con Stock Bajo:*\\n${lines.join('\\n')}`;\n} else {\n  lowStockSection = '\\n\\n✅ *Stock:* Todos los productos tienen stock suficiente.';\n}\n\nconst report = `📊 *REPORTE DIARIO — ${metrics.fecha}*\\n\\n` +\n  `💰 Total Vendido: $${metrics.total_ventas}\\n` +\n  `📦 Pedidos Completados: ${metrics.num_pedidos}\\n` +\n  `⭐ Producto Estrella: ${metrics.producto_estrella} (${metrics.cantidad_estrella} uds)\\n` +\n  `🕐 Hora Pico: ${metrics.hora_pico}` +\n  lowStockSection +\n  `\\n\\n🕐 _Generado: ${metrics.generado_en}_`;\n\nreturn [{ json: { report } }];"
+      },
+      "id": "b1000000-0000-0000-0000-000000000009",
+      "name": "Format Report",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1760, 300]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $env.ADMIN_CHAT_ID || '' }}",
+        "text": "={{ $json.report }}",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "b1000000-0000-0000-0000-000000000010",
+      "name": "Send Report to Admin",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1980, 300],
+      "credentials": {
+        "telegramApi": {
+          "id": "telegramApi",
+          "name": "telegramApi"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Cron Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Today Date",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Today Date": {
+      "main": [
+        [
+          {
+            "node": "Read Today Orders",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Read Detail Lines",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Today Orders": {
+      "main": [
+        [
+          {
+            "node": "Calculate Metrics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Detail Lines": {
+      "main": [
+        [
+          {
+            "node": "Calculate Metrics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Metrics": {
+      "main": [
+        [
+          {
+            "node": "Write to REPORTES_CACHE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write to REPORTES_CACHE": {
+      "main": [
+        [
+          {
+            "node": "Read All Menu Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read All Menu Items": {
+      "main": [
+        [
+          {
+            "node": "Check Low Stock",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Low Stock": {
+      "main": [
+        [
+          {
+            "node": "Format Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Report": {
+      "main": [
+        [
+          {
+            "node": "Send Report to Admin",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": ""
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "name": "DeliveryBot",
+      "createdAt": "2026-06-04T00:00:00.000Z",
+      "updatedAt": "2026-06-04T00:00:00.000Z"
+    },
+    {
+      "name": "Reports",
+      "createdAt": "2026-06-04T00:00:00.000Z",
+      "updatedAt": "2026-06-04T00:00:00.000Z"
+    }
+  ],
+  "triggerCount": 1,
+  "active": false,
+  "pinData": {},
+  "versionId": "1",
+  "meta": {
+    "instanceId": "deliverybot-admin-reportes"
+  }
+}

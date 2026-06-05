@@ -1,0 +1,19 @@
+id_producto,nombre,descripcion,precio,categoria,stock,stock_minimo,activo,version
+BEB-001,Café Americano,Café negro 12oz,3.50,Bebidas,50,5,TRUE,1
+BEB-002,Café Latte,Café con leche espumada 12oz,4.50,Bebidas,40,5,TRUE,1
+BEB-003,Cappuccino,Espresso con espuma de leche,4.50,Bebidas,40,5,TRUE,1
+BEB-004,Jugo de Naranja,Jugo natural recién exprimido,4.00,Bebidas,30,5,TRUE,1
+BEB-005,Smoothie de Fresa,Fresa fresca con yogurt,5.50,Bebidas,25,3,TRUE,1
+BEB-006,Té Verde,Té verde orgánico,3.00,Bebidas,45,5,TRUE,1
+BEB-007,Chocolate Caliente,Chocolate premium con leche,4.00,Bebidas,35,5,TRUE,1
+ALM-001,Sandwich de Pollo,Pan integral pollo a la plancha lechuga tomate,6.50,Almuerzos,20,3,TRUE,1
+ALM-002,Ensalada César,Lechuga romana parmesano crutones aderezo,7.00,Almuerzos,15,3,TRUE,1
+ALM-003,Wrap Vegetariano,Tortilla integral con vegetales frescos y hummus,6.00,Almuerzos,18,3,TRUE,1
+ALM-004,Bowl de Arroz con Pollo,Arroz integral pollo teriyaki vegetales,8.50,Almuerzos,15,3,TRUE,1
+ALM-005,Pasta Alfredo,Fettuccine con salsa Alfredo y pollo,9.00,Almuerzos,12,2,TRUE,1
+SNK-001,Empanada de Carne,Empanada horneada rellena de carne,2.50,Snacks,40,5,TRUE,1
+SNK-002,Croissant de Jamón y Queso,Croissant relleno horneado,3.50,Snacks,30,5,TRUE,1
+SNK-003,Muffin de Arándano,Muffin casero con arándanos frescos,3.00,Snacks,25,5,TRUE,1
+SNK-004,Galletas de Chocolate,Pack de 3 galletas artesanales,2.00,Snacks,50,10,TRUE,1
+SNK-005,Barra de Granola,Barra de granola con miel y nueces,2.50,Snacks,40,5,TRUE,1
+SNK-006,Fruta Picada,Bowl de frutas frescas de temporada,4.00,Snacks,20,3,TRUE,1

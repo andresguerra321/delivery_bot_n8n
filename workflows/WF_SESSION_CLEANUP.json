@@ -1,0 +1,532 @@
+{
+  "name": "WF_SESSION_CLEANUP",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "*/15 * * * *"
+            }
+          ]
+        }
+      },
+      "id": "c1000000-0000-0000-0000-000000000001",
+      "name": "Cron Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [220, 300]
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SPREADSHEET_ID_HERE",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "SESSIONS",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "c1000000-0000-0000-0000-000000000002",
+      "name": "Read All Sessions",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [440, 300],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "googleSheetsOAuth2Api",
+          "name": "googleSheetsOAuth2Api"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const sessions = $input.all();\nconst now = Date.now();\nconst TTL = 30 * 60 * 1000; // 30 minutes\n\nconst expired = sessions.filter(s => {\n  const lastChange = new Date(s.json.ultimo_cambio).getTime();\n  const estado = s.json.estado_fsm || '';\n  return (now - lastChange > TTL) &&\n    estado !== 'IDLE' &&\n    estado !== 'ENTREGADO' &&\n    estado !== '';\n});\n\nif (expired.length === 0) {\n  return [{ json: { count: 0, has_expired: false } }];\n}\n\nreturn expired.map(s => ({ json: { ...s.json, has_expired: true } }));"
+      },
+      "id": "c1000000-0000-0000-0000-000000000003",
+      "name": "Filter Expired",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [660, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "cond-has-expired",
+              "leftValue": "={{ $json.has_expired }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "c1000000-0000-0000-0000-000000000004",
+      "name": "Check If Any Expired",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [880, 300]
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "id": "c1000000-0000-0000-0000-000000000005",
+      "name": "Loop Over Expired",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [1100, 200]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "cond-cart-not-empty",
+              "leftValue": "={{ $json.carrito_json }}",
+              "rightValue": "[]",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            },
+            {
+              "id": "cond-cart-not-blank",
+              "leftValue": "={{ $json.carrito_json }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "c1000000-0000-0000-0000-000000000006",
+      "name": "Check Cart",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1320, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse cart items for stock restoration\nconst carritoRaw = $json.carrito_json || '[]';\nconst telegramId = $json.telegram_id;\nlet carrito;\ntry {\n  carrito = JSON.parse(carritoRaw);\n} catch (e) {\n  carrito = [];\n}\n\nif (carrito.length === 0) {\n  return [{ json: { skip: true, telegram_id: telegramId } }];\n}\n\n// Return items with quantities to restore\nreturn carrito.map(item => ({\n  json: {\n    item_id: item.id,\n    nombre: item.nombre,\n    cantidad_a_restaurar: item.cantidad || item.qty || 1,\n    telegram_id: telegramId\n  }\n}));"
+      },
+      "id": "c1000000-0000-0000-0000-000000000007",
+      "name": "Parse Cart Items",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1540, 100]
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SPREADSHEET_ID_HERE",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "MENU",
+          "mode": "name"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "id",
+              "lookupValue": "={{ $json.item_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "c1000000-0000-0000-0000-000000000008",
+      "name": "Read Menu Stock",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [1760, 100],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "googleSheetsOAuth2Api",
+          "name": "googleSheetsOAuth2Api"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SPREADSHEET_ID_HERE",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "MENU",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "stock": "={{ parseInt($('Read Menu Stock').first().json.stock || '0') + parseInt($('Parse Cart Items').first().json.cantidad_a_restaurar || '0') }}"
+          }
+        },
+        "options": {
+          "cellFormat": "USER_ENTERED"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "id",
+              "lookupValue": "={{ $('Parse Cart Items').first().json.item_id }}"
+            }
+          ]
+        }
+      },
+      "id": "c1000000-0000-0000-0000-000000000009",
+      "name": "Restore Stock",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [1980, 100],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "googleSheetsOAuth2Api",
+          "name": "googleSheetsOAuth2Api"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SPREADSHEET_ID_HERE",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "SESSIONS",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "estado_fsm": "IDLE",
+            "carrito_json": "[]",
+            "contexto_json": "{}"
+          }
+        },
+        "options": {
+          "cellFormat": "USER_ENTERED"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "telegram_id",
+              "lookupValue": "={{ $('Loop Over Expired').first().json.telegram_id }}"
+            }
+          ]
+        }
+      },
+      "id": "c1000000-0000-0000-0000-000000000010",
+      "name": "Reset Session",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [1540, 380],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "googleSheetsOAuth2Api",
+          "name": "googleSheetsOAuth2Api"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Loop Over Expired').first().json.telegram_id }}",
+        "text": "⏰ Tu sesión expiró por inactividad. Escribe /start para comenzar de nuevo.",
+        "additionalFields": {}
+      },
+      "id": "c1000000-0000-0000-0000-000000000011",
+      "name": "Notify User Timeout",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1760, 380],
+      "credentials": {
+        "telegramApi": {
+          "id": "telegramApi",
+          "name": "telegramApi"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SPREADSHEET_ID_HERE",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "ERROR_LOG",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "tipo": "SESSION_TIMEOUT",
+            "detalle": "=Session expired for telegram_id={{ $('Loop Over Expired').first().json.telegram_id }}",
+            "timestamp": "={{ new Date().toISOString() }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "c1000000-0000-0000-0000-000000000012",
+      "name": "Log Timeout",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [1980, 380],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "googleSheetsOAuth2Api",
+          "name": "googleSheetsOAuth2Api"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Summary: count how many sessions were cleaned\nconst items = $('Filter Expired').all();\nconst cleaned = items.filter(i => i.json.has_expired === true).length;\nconst timestamp = new Date().toISOString();\n\nconsole.log(`[SESSION_CLEANUP] ${timestamp} — Cleaned ${cleaned} expired sessions`);\n\nreturn [{\n  json: {\n    message: `Session cleanup completed. ${cleaned} expired sessions cleaned.`,\n    cleaned_count: cleaned,\n    timestamp\n  }\n}];"
+      },
+      "id": "c1000000-0000-0000-0000-000000000013",
+      "name": "Summary Log",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2200, 300]
+    },
+    {
+      "parameters": {},
+      "id": "c1000000-0000-0000-0000-000000000014",
+      "name": "No Expired Sessions",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [1100, 440]
+    }
+  ],
+  "connections": {
+    "Cron Trigger": {
+      "main": [
+        [
+          {
+            "node": "Read All Sessions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read All Sessions": {
+      "main": [
+        [
+          {
+            "node": "Filter Expired",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Expired": {
+      "main": [
+        [
+          {
+            "node": "Check If Any Expired",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check If Any Expired": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Expired",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Expired Sessions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Expired": {
+      "main": [
+        [
+          {
+            "node": "Summary Log",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Check Cart",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Cart": {
+      "main": [
+        [
+          {
+            "node": "Parse Cart Items",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reset Session",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Cart Items": {
+      "main": [
+        [
+          {
+            "node": "Read Menu Stock",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Menu Stock": {
+      "main": [
+        [
+          {
+            "node": "Restore Stock",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Restore Stock": {
+      "main": [
+        [
+          {
+            "node": "Reset Session",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reset Session": {
+      "main": [
+        [
+          {
+            "node": "Notify User Timeout",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify User Timeout": {
+      "main": [
+        [
+          {
+            "node": "Log Timeout",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Timeout": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Expired",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "No Expired Sessions": {
+      "main": [
+        [
+          {
+            "node": "Summary Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": ""
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "name": "DeliveryBot",
+      "createdAt": "2026-06-04T00:00:00.000Z",
+      "updatedAt": "2026-06-04T00:00:00.000Z"
+    },
+    {
+      "name": "Maintenance",
+      "createdAt": "2026-06-04T00:00:00.000Z",
+      "updatedAt": "2026-06-04T00:00:00.000Z"
+    }
+  ],
+  "triggerCount": 1,
+  "active": false,
+  "pinData": {},
+  "versionId": "1",
+  "meta": {
+    "instanceId": "deliverybot-session-cleanup"
+  }
+}

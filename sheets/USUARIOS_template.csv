@@ -1,0 +1,6 @@
+telegram_id,nombre_completo,username,departamento,puntos_lealtad,fecha_registro,activo
+100000001,Andrea López,@andrealopez,Ingeniería,150,2026-01-15,TRUE
+100000002,Carlos Mendoza,@carlosmendoza,Recursos Humanos,80,2026-02-20,TRUE
+100000003,María García,@mariagarcia,Marketing,120,2026-01-28,TRUE
+100000004,Juan Rodríguez,@juanrodriguez,Finanzas,45,2026-03-10,TRUE
+100000005,Laura Sánchez,@laurasanchez,Dirección,200,2026-01-05,TRUE

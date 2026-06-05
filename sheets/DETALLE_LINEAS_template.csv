@@ -1,0 +1,10 @@
+id_pedido,id_producto,nombre,cantidad,precio_unitario,fecha
+ORD-20260604-0001,BEB-001,Café Americano,2,3.50,2026-06-04
+ORD-20260604-0001,SNK-001,Empanada de Carne,1,2.50,2026-06-04
+ORD-20260604-0002,ALM-001,Sandwich de Pollo,1,6.50,2026-06-04
+ORD-20260604-0003,BEB-002,Café Latte,1,4.50,2026-06-04
+ORD-20260604-0003,SNK-003,Muffin de Arándano,2,3.00,2026-06-04
+ORD-20260604-0004,ALM-004,Bowl de Arroz con Pollo,1,8.50,2026-06-04
+ORD-20260604-0004,BEB-004,Jugo de Naranja,1,4.00,2026-06-04
+ORD-20260604-0005,BEB-005,Smoothie de Fresa,1,5.50,2026-06-04
+ORD-20260604-0005,SNK-002,Croissant de Jamón y Queso,1,3.50,2026-06-04

@@ -1,0 +1,74 @@
+{
+  "name": "WF_FLOW_PEDIDO",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "1",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "rules": [
+            {
+              "intent": "rule1",
+              "conditions": {
+                "string": [
+                  {
+                    "value1": "={{ $json.callback_data }}",
+                    "operation": "equal",
+                    "value2": "confirm_yes"
+                  }
+                ]
+              },
+              "output": 0
+            }
+          ]
+        },
+        "fallbackOutput": 1
+      },
+      "id": "2",
+      "name": "Pedido Router",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    nuevo_estado: 'IDLE',\n    mensaje: '✅ *¡Pedido confirmado!*\\n\\n📦 Orden: #ORD-20260604-0042\\n💰 Total: $14.04\\n📍 Estado: Recibido\\n\\nTe notificaremos cuando esté en preparación. 🍳',\n    reply_markup: {\n      inline_keyboard: []\n    },\n    session_updates: {\n      estado_fsm: 'IDLE',\n      carrito_json: '[]',\n      contexto_json: '{}'\n    }\n  }\n}];"
+      },
+      "id": "3",
+      "name": "Format Success",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [650, 150]
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Pedido Router",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pedido Router": {
+      "main": [
+        [
+          {
+            "node": "Format Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

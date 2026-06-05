@@ -1,0 +1,96 @@
+{
+  "name": "WF_FLOW_MENU",
+  "nodes": [
+    {
+      "parameters": {
+        "rules": {
+          "rules": [
+            {},
+            {
+              "output": 1
+            },
+            {
+              "output": 2
+            }
+          ]
+        },
+        "fallbackOutput": 0
+      },
+      "id": "b97ca490-4580-4d16-97f0-a5607df46e09",
+      "name": "Menu Router",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [
+        -208,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const cb = $json.callback_data;\nif (cb === \"cat_ver_todas\") {\n  return [{\n    json: {\n      mensaje: \"🛒 *Categorías*\\n\\nSelecciona una categoría:\",\n      reply_markup: {\n        inline_keyboard: [\n          [{ text: \"☕ Bebidas\", callback_data: \"cat_bebidas\" }],\n          [{ text: \"🍔 Comidas\", callback_data: \"cat_comidas\" }],\n          [{ text: \"⬅️ Volver\", callback_data: \"back_menu\" }]\n        ]\n      },\n      session_updates: {\n        estado_fsm: \"SELECCION_CANTIDAD\",\n        carrito_json: $json.carrito_json || \"[]\",\n        contexto_json: $json.contexto_json || \"{}\"\n      }\n    }\n  }];\n} else if (cb === \"confirm_track\") {\n  return [{\n    json: {\n      mensaje: \"📍 *Seguimiento*\\n\\nPor favor, ingresa tu número de orden (ej: ORD-1234):\",\n      reply_markup: {},\n      session_updates: {\n        estado_fsm: \"TRACK_ORDER\",\n        carrito_json: $json.carrito_json || \"[]\",\n        contexto_json: $json.contexto_json || \"{}\"\n      }\n    }\n  }];\n} else if (cb === \"cart_ver_historial\") {\n  return [{\n    json: {\n      mensaje: \"📋 *Historial de Pedidos*\\n\\nNo tienes pedidos recientes.\",\n      reply_markup: {\n        inline_keyboard: [[{ text: \"⬅️ Volver\", callback_data: \"back_menu\" }]]\n      },\n      session_updates: {\n        estado_fsm: \"MENU_PRINCIPAL\",\n        carrito_json: $json.carrito_json || \"[]\",\n        contexto_json: $json.contexto_json || \"{}\"\n      }\n    }\n  }];\n}\n\n// Default (no callback or back_menu)\nreturn [{\n  json: {\n    mensaje: \"¡Bienvenido a DeliveryBot! 🍔\\n\\nPor favor, selecciona una opción:\",\n    reply_markup: {\n      inline_keyboard: [\n        [\n          { text: \"🛒 Hacer Pedido\", callback_data: \"cat_ver_todas\" }\n        ],\n        [\n          { text: \"📋 Mis Pedidos\", callback_data: \"cart_ver_historial\" },\n          { text: \"📍 Seguir Pedido\", callback_data: \"confirm_track\" }\n        ]\n      ]\n    },\n    session_updates: {\n      estado_fsm: \"MENU_PRINCIPAL\",\n      carrito_json: $json.carrito_json || \"[]\",\n      contexto_json: $json.contexto_json || \"{}\"\n    }\n  }\n}];"
+      },
+      "id": "bf8415f4-673b-41d6-8a82-80d3da63d0d4",
+      "name": "Format Main Menu",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "c59e9f47-d06b-46fa-8335-74047de40290",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        -400,
+        160
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Menu Router": {
+      "main": [
+        [
+          {
+            "node": "Format Main Menu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Main Menu": {
+      "main": [
+        []
+      ]
+    },
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Menu Router",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "0eac83a4-f2b4-433c-93be-2d9e7832e152",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "299e35ebd91eed53cf15d79c3470f1d21bc49e880bfdffa38e7da52cebfa1391"
+  },
+  "nodeGroups": [],
+  "id": "eLdfA8OQMiTKeEs3",
+  "tags": []
+}

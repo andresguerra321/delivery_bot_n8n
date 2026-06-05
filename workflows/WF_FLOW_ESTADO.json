@@ -1,0 +1,74 @@
+{
+  "name": "WF_FLOW_ESTADO",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "1",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "rules": [
+            {
+              "intent": "rule1",
+              "conditions": {
+                "string": [
+                  {
+                    "value1": "={{ $json.estado_fsm }}",
+                    "operation": "equal",
+                    "value2": "TRACK_ORDER"
+                  }
+                ]
+              },
+              "output": 0
+            }
+          ]
+        },
+        "fallbackOutput": 1
+      },
+      "id": "2",
+      "name": "Estado Router",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    nuevo_estado: 'MENU_PRINCIPAL',\n    mensaje: '📍 *Estado de tu pedido*\\n\\n📦 Orden: #ORD-20260604-0042\\n\\nEstado: 🔥 En Preparación',\n    reply_markup: {\n      inline_keyboard: [\n        [{ text: '⬅️ Menú Principal', callback_data: 'action_back_main' }]\n      ]\n    },\n    session_updates: {\n      estado_fsm: 'MENU_PRINCIPAL',\n      carrito_json: '[]',\n      contexto_json: '{}'\n    }\n  }\n}];"
+      },
+      "id": "3",
+      "name": "Format Estado",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [650, 150]
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Estado Router",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Estado Router": {
+      "main": [
+        [
+          {
+            "node": "Format Estado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

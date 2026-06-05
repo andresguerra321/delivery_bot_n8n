@@ -1,0 +1,87 @@
+{
+  "name": "WF_FLOW_CARRITO",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "1",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "rules": [
+            {
+              "intent": "rule1",
+              "conditions": {
+                "string": [
+                  {
+                    "value1": "={{ $json.estado_fsm }}",
+                    "operation": "equal",
+                    "value2": "SELECCION_CANTIDAD"
+                  }
+                ]
+              },
+              "output": 0
+            },
+            {
+              "intent": "rule2",
+              "conditions": {
+                "string": [
+                  {
+                    "value1": "={{ $json.estado_fsm }}",
+                    "operation": "equal",
+                    "value2": "CARRITO"
+                  }
+                ]
+              },
+              "output": 1
+            }
+          ]
+        },
+        "fallbackOutput": 2
+      },
+      "id": "2",
+      "name": "Cart Router",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    nuevo_estado: 'CARRITO',\n    mensaje: '🛒 *Tu Carrito*\\n\\n1. ☕ Café Americano x1 — $3.50\\n\\n💰 Subtotal: $3.50',\n    reply_markup: {\n      inline_keyboard: [\n        [{ text: '➕ Agregar más', callback_data: 'action_add_more' }],\n        [{ text: '✅ Confirmar Pedido', callback_data: 'action_confirm' }]\n      ]\n    },\n    session_updates: {\n      estado_fsm: 'CARRITO',\n      carrito_json: '[{\"id\":\"BEB-001\",\"qty\":1}]',\n      contexto_json: '{}'\n    }\n  }\n}];"
+      },
+      "id": "3",
+      "name": "Format Cart",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [650, 150]
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Cart Router",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cart Router": {
+      "main": [
+        [
+          {
+            "node": "Format Cart",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

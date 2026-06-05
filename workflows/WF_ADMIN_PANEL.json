@@ -1,0 +1,1260 @@
+{
+  "name": "WF_ADMIN_PANEL",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": ["callback_query"],
+        "additionalFields": {}
+      },
+      "id": "a1000000-0000-0000-0000-000000000001",
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.1,
+      "position": [220, 300],
+      "credentials": {
+        "telegramApi": {
+          "id": "telegramApi",
+          "name": "telegramApi"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "cond-admin-check",
+              "leftValue": "={{ $json.callback_query.data }}",
+              "rightValue": "admin_",
+              "operator": {
+                "type": "string",
+                "operation": "startsWith"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "a1000000-0000-0000-0000-000000000002",
+      "name": "Check Admin Callback",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [440, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse admin callback data\n// Format: admin_{action}_{orderId}\n// e.g. admin_prep_ORD-20260604-0042\nconst callbackData = $('Telegram Trigger').first().json.callback_query.data;\nconst chatId = $('Telegram Trigger').first().json.callback_query.message.chat.id;\nconst messageId = $('Telegram Trigger').first().json.callback_query.message.message_id;\nconst parts = callbackData.split('_');\n\n// parts[0] = 'admin'\n// parts[1] = action (prep, enroute, delivered, reject)\n// parts[2..] = orderId (may contain underscores, so rejoin)\nconst action = parts[1];\nconst orderId = parts.slice(2).join('_');\n\nreturn [{\n  json: {\n    action,\n    orderId,\n    chatId,\n    messageId,\n    callbackData\n  }\n}];"
+      },
+      "id": "a1000000-0000-0000-0000-000000000003",
+      "name": "Parse Admin Action",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [660, 200]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "prep",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "outputIndex": 0,
+              "renameOutput": true,
+              "outputLabel": "prep"
+            },
+            {
+              "conditions": {
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "enroute",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "outputIndex": 1,
+              "renameOutput": true,
+              "outputLabel": "enroute"
+            },
+            {
+              "conditions": {
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "delivered",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "outputIndex": 2,
+              "renameOutput": true,
+              "outputLabel": "delivered"
+            },
+            {
+              "conditions": {
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "reject",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "outputIndex": 3,
+              "renameOutput": true,
+              "outputLabel": "reject"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a1000000-0000-0000-0000-000000000004",
+      "name": "State Transition Map",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [880, 200]
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SPREADSHEET_ID_HERE",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "PEDIDOS",
+          "mode": "name"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "id_pedido",
+              "lookupValue": "={{ $json.orderId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a1000000-0000-0000-0000-000000000010",
+      "name": "Read Order - Prep",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [1100, -100],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "googleSheetsOAuth2Api",
+          "name": "googleSheetsOAuth2Api"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SPREADSHEET_ID_HERE",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "PEDIDOS",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "estado": "PREPARACION"
+          }
+        },
+        "options": {
+          "cellFormat": "USER_ENTERED"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "id_pedido",
+              "lookupValue": "={{ $('Parse Admin Action').first().json.orderId }}"
+            }
+          ]
+        }
+      },
+      "id": "a1000000-0000-0000-0000-000000000011",
+      "name": "Update PEDIDOS - Prep",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [1320, -100],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "googleSheetsOAuth2Api",
+          "name": "googleSheetsOAuth2Api"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Read Order - Prep').first().json.telegram_id }}",
+        "text": "=👨‍🍳 Tu pedido #{{ $('Parse Admin Action').first().json.orderId }} está siendo preparado. ⏱ Tiempo estimado: 10-15 min",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "a1000000-0000-0000-0000-000000000012",
+      "name": "Notify User - Prep",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1540, -100],
+      "credentials": {
+        "telegramApi": {
+          "id": "telegramApi",
+          "name": "telegramApi"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "editMessageText",
+        "chatId": "={{ $('Parse Admin Action').first().json.chatId }}",
+        "messageId": "={{ $('Parse Admin Action').first().json.messageId }}",
+        "text": "=🔄 Pedido #{{ $('Parse Admin Action').first().json.orderId }} — Estado: *PREPARACIÓN*",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "🚴 En camino",
+                    "additionalFields": {
+                      "callback_data": "=admin_enroute_{{ $('Parse Admin Action').first().json.orderId }}"
+                    }
+                  },
+                  {
+                    "text": "✅ Entregado",
+                    "additionalFields": {
+                      "callback_data": "=admin_delivered_{{ $('Parse Admin Action').first().json.orderId }}"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "a1000000-0000-0000-0000-000000000013",
+      "name": "Update Kitchen Msg - Prep",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1760, -100],
+      "credentials": {
+        "telegramApi": {
+          "id": "telegramApi",
+          "name": "telegramApi"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SPREADSHEET_ID_HERE",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "PEDIDOS",
+          "mode": "name"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "id_pedido",
+              "lookupValue": "={{ $json.orderId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a1000000-0000-0000-0000-000000000020",
+      "name": "Read Order - Enroute",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [1100, 100],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "googleSheetsOAuth2Api",
+          "name": "googleSheetsOAuth2Api"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SPREADSHEET_ID_HERE",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "PEDIDOS",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "estado": "EN_CAMINO"
+          }
+        },
+        "options": {
+          "cellFormat": "USER_ENTERED"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "id_pedido",
+              "lookupValue": "={{ $('Parse Admin Action').first().json.orderId }}"
+            }
+          ]
+        }
+      },
+      "id": "a1000000-0000-0000-0000-000000000021",
+      "name": "Update PEDIDOS - Enroute",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [1320, 100],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "googleSheetsOAuth2Api",
+          "name": "googleSheetsOAuth2Api"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Read Order - Enroute').first().json.telegram_id }}",
+        "text": "=🚴 Tu pedido #{{ $('Parse Admin Action').first().json.orderId }} va en camino. ¡Prepárate para recibirlo!",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "a1000000-0000-0000-0000-000000000022",
+      "name": "Notify User - Enroute",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1540, 100],
+      "credentials": {
+        "telegramApi": {
+          "id": "telegramApi",
+          "name": "telegramApi"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "editMessageText",
+        "chatId": "={{ $('Parse Admin Action').first().json.chatId }}",
+        "messageId": "={{ $('Parse Admin Action').first().json.messageId }}",
+        "text": "=🚴 Pedido #{{ $('Parse Admin Action').first().json.orderId }} — Estado: *EN CAMINO*",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "✅ Entregado",
+                    "additionalFields": {
+                      "callback_data": "=admin_delivered_{{ $('Parse Admin Action').first().json.orderId }}"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "a1000000-0000-0000-0000-000000000023",
+      "name": "Update Kitchen Msg - Enroute",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1760, 100],
+      "credentials": {
+        "telegramApi": {
+          "id": "telegramApi",
+          "name": "telegramApi"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SPREADSHEET_ID_HERE",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "PEDIDOS",
+          "mode": "name"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "id_pedido",
+              "lookupValue": "={{ $json.orderId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a1000000-0000-0000-0000-000000000030",
+      "name": "Read Order - Delivered",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [1100, 300],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "googleSheetsOAuth2Api",
+          "name": "googleSheetsOAuth2Api"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SPREADSHEET_ID_HERE",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "PEDIDOS",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "estado": "ENTREGADO",
+            "hora_entrega": "={{ new Date().toISOString() }}"
+          }
+        },
+        "options": {
+          "cellFormat": "USER_ENTERED"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "id_pedido",
+              "lookupValue": "={{ $('Parse Admin Action').first().json.orderId }}"
+            }
+          ]
+        }
+      },
+      "id": "a1000000-0000-0000-0000-000000000031",
+      "name": "Update PEDIDOS - Delivered",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [1320, 300],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "googleSheetsOAuth2Api",
+          "name": "googleSheetsOAuth2Api"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Read Order - Delivered').first().json.telegram_id }}",
+        "text": "=✅ Tu pedido #{{ $('Parse Admin Action').first().json.orderId }} ha sido entregado. ¡Buen provecho! 🍽",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "a1000000-0000-0000-0000-000000000032",
+      "name": "Notify User - Delivered",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1540, 300],
+      "credentials": {
+        "telegramApi": {
+          "id": "telegramApi",
+          "name": "telegramApi"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "editMessageText",
+        "chatId": "={{ $('Parse Admin Action').first().json.chatId }}",
+        "messageId": "={{ $('Parse Admin Action').first().json.messageId }}",
+        "text": "=✅ Pedido #{{ $('Parse Admin Action').first().json.orderId }} completado",
+        "replyMarkup": "none",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "a1000000-0000-0000-0000-000000000033",
+      "name": "Update Kitchen Msg - Delivered",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1760, 300],
+      "credentials": {
+        "telegramApi": {
+          "id": "telegramApi",
+          "name": "telegramApi"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Add loyalty points to user\nconst order = $('Read Order - Delivered').first().json;\nconst telegramId = order.telegram_id;\nconst orderId = $('Parse Admin Action').first().json.orderId;\n\nreturn [{\n  json: {\n    telegram_id: telegramId,\n    orderId: orderId,\n    puntos_agregar: 10\n  }\n}];"
+      },
+      "id": "a1000000-0000-0000-0000-000000000034",
+      "name": "Prepare Loyalty Points",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1980, 300]
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SPREADSHEET_ID_HERE",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "USUARIOS",
+          "mode": "name"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "telegram_id",
+              "lookupValue": "={{ $json.telegram_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a1000000-0000-0000-0000-000000000035",
+      "name": "Read User Loyalty",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [2200, 300],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "googleSheetsOAuth2Api",
+          "name": "googleSheetsOAuth2Api"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SPREADSHEET_ID_HERE",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "USUARIOS",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "puntos_fidelidad": "={{ parseInt($('Read User Loyalty').first().json.puntos_fidelidad || '0') + 10 }}"
+          }
+        },
+        "options": {
+          "cellFormat": "USER_ENTERED"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "telegram_id",
+              "lookupValue": "={{ $('Prepare Loyalty Points').first().json.telegram_id }}"
+            }
+          ]
+        }
+      },
+      "id": "a1000000-0000-0000-0000-000000000036",
+      "name": "Update Loyalty Points",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [2420, 300],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "googleSheetsOAuth2Api",
+          "name": "googleSheetsOAuth2Api"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SPREADSHEET_ID_HERE",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "PEDIDOS",
+          "mode": "name"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "id_pedido",
+              "lookupValue": "={{ $json.orderId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a1000000-0000-0000-0000-000000000040",
+      "name": "Read Order - Reject",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [1100, 540],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "googleSheetsOAuth2Api",
+          "name": "googleSheetsOAuth2Api"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SPREADSHEET_ID_HERE",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "PEDIDOS",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "estado": "CANCELADO"
+          }
+        },
+        "options": {
+          "cellFormat": "USER_ENTERED"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "id_pedido",
+              "lookupValue": "={{ $('Parse Admin Action').first().json.orderId }}"
+            }
+          ]
+        }
+      },
+      "id": "a1000000-0000-0000-0000-000000000041",
+      "name": "Update PEDIDOS - Reject",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [1320, 540],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "googleSheetsOAuth2Api",
+          "name": "googleSheetsOAuth2Api"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Restore stock for rejected order\nconst order = $('Read Order - Reject').first().json;\nconst carritoRaw = order.carrito_json || '[]';\nlet carrito;\ntry {\n  carrito = JSON.parse(carritoRaw);\n} catch (e) {\n  carrito = [];\n}\n\n// Output each item to restore\nconst results = carrito.map(item => ({\n  json: {\n    id: item.id,\n    nombre: item.nombre,\n    cantidad_a_restaurar: item.cantidad || item.qty || 1\n  }\n}));\n\nreturn results.length > 0 ? results : [{ json: { skip: true } }];"
+      },
+      "id": "a1000000-0000-0000-0000-000000000042",
+      "name": "Parse Cart for Stock Restore",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1540, 540]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "cond-has-items",
+              "leftValue": "={{ $json.skip }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "notTrue"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "a1000000-0000-0000-0000-000000000043",
+      "name": "Has Items to Restore",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1760, 540]
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SPREADSHEET_ID_HERE",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "MENU",
+          "mode": "name"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "id",
+              "lookupValue": "={{ $json.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a1000000-0000-0000-0000-000000000044",
+      "name": "Read Menu Item Stock",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [1980, 440],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "googleSheetsOAuth2Api",
+          "name": "googleSheetsOAuth2Api"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SPREADSHEET_ID_HERE",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "MENU",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "stock": "={{ parseInt($('Read Menu Item Stock').first().json.stock || '0') + parseInt($('Parse Cart for Stock Restore').first().json.cantidad_a_restaurar || '0') }}"
+          }
+        },
+        "options": {
+          "cellFormat": "USER_ENTERED"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "id",
+              "lookupValue": "={{ $('Parse Cart for Stock Restore').first().json.id }}"
+            }
+          ]
+        }
+      },
+      "id": "a1000000-0000-0000-0000-000000000045",
+      "name": "Restore Stock",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [2200, 440],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "googleSheetsOAuth2Api",
+          "name": "googleSheetsOAuth2Api"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Read Order - Reject').first().json.telegram_id }}",
+        "text": "=😔 Lo sentimos, tu pedido #{{ $('Parse Admin Action').first().json.orderId }} no pudo ser procesado. El monto no fue cobrado.",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "a1000000-0000-0000-0000-000000000046",
+      "name": "Notify User - Reject",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1540, 700],
+      "credentials": {
+        "telegramApi": {
+          "id": "telegramApi",
+          "name": "telegramApi"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "callback",
+        "operation": "answerQuery",
+        "queryId": "={{ $('Telegram Trigger').first().json.callback_query.id }}",
+        "additionalFields": {}
+      },
+      "id": "a1000000-0000-0000-0000-000000000050",
+      "name": "Answer Callback Query",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [660, 400],
+      "credentials": {
+        "telegramApi": {
+          "id": "telegramApi",
+          "name": "telegramApi"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "a1000000-0000-0000-0000-000000000060",
+      "name": "Stop - Not Admin",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [660, 500]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Error handler — log the error details\nconst error = $input.first().json;\nconst errorMsg = `[WF_ADMIN_PANEL] Error: ${JSON.stringify(error)}`;\nconsole.log(errorMsg);\n\nreturn [{\n  json: {\n    tipo: 'ADMIN_PANEL_ERROR',\n    detalle: errorMsg,\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "a1000000-0000-0000-0000-000000000070",
+      "name": "Error Handler",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [220, 700]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SPREADSHEET_ID_HERE",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "ERROR_LOG",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData"
+        },
+        "options": {}
+      },
+      "id": "a1000000-0000-0000-0000-000000000071",
+      "name": "Log Error to Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [440, 700],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "googleSheetsOAuth2Api",
+          "name": "googleSheetsOAuth2Api"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $env.ADMIN_CHAT_ID || '' }}",
+        "text": "=🚨 *Error en Admin Panel*\n\n{{ $json.detalle }}",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "a1000000-0000-0000-0000-000000000072",
+      "name": "Notify Admin Error",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [660, 700],
+      "credentials": {
+        "telegramApi": {
+          "id": "telegramApi",
+          "name": "telegramApi"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Check Admin Callback",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Answer Callback Query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Admin Callback": {
+      "main": [
+        [
+          {
+            "node": "Parse Admin Action",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop - Not Admin",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Admin Action": {
+      "main": [
+        [
+          {
+            "node": "State Transition Map",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "State Transition Map": {
+      "main": [
+        [
+          {
+            "node": "Read Order - Prep",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Read Order - Enroute",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Read Order - Delivered",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Read Order - Reject",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Order - Prep": {
+      "main": [
+        [
+          {
+            "node": "Update PEDIDOS - Prep",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update PEDIDOS - Prep": {
+      "main": [
+        [
+          {
+            "node": "Notify User - Prep",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify User - Prep": {
+      "main": [
+        [
+          {
+            "node": "Update Kitchen Msg - Prep",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Order - Enroute": {
+      "main": [
+        [
+          {
+            "node": "Update PEDIDOS - Enroute",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update PEDIDOS - Enroute": {
+      "main": [
+        [
+          {
+            "node": "Notify User - Enroute",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify User - Enroute": {
+      "main": [
+        [
+          {
+            "node": "Update Kitchen Msg - Enroute",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Order - Delivered": {
+      "main": [
+        [
+          {
+            "node": "Update PEDIDOS - Delivered",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update PEDIDOS - Delivered": {
+      "main": [
+        [
+          {
+            "node": "Notify User - Delivered",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify User - Delivered": {
+      "main": [
+        [
+          {
+            "node": "Update Kitchen Msg - Delivered",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Kitchen Msg - Delivered": {
+      "main": [
+        [
+          {
+            "node": "Prepare Loyalty Points",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Loyalty Points": {
+      "main": [
+        [
+          {
+            "node": "Read User Loyalty",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read User Loyalty": {
+      "main": [
+        [
+          {
+            "node": "Update Loyalty Points",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Order - Reject": {
+      "main": [
+        [
+          {
+            "node": "Update PEDIDOS - Reject",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update PEDIDOS - Reject": {
+      "main": [
+        [
+          {
+            "node": "Parse Cart for Stock Restore",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Notify User - Reject",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Cart for Stock Restore": {
+      "main": [
+        [
+          {
+            "node": "Has Items to Restore",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Items to Restore": {
+      "main": [
+        [
+          {
+            "node": "Read Menu Item Stock",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Read Menu Item Stock": {
+      "main": [
+        [
+          {
+            "node": "Restore Stock",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Handler": {
+      "main": [
+        [
+          {
+            "node": "Log Error to Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Error to Sheet": {
+      "main": [
+        [
+          {
+            "node": "Notify Admin Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": ""
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "name": "DeliveryBot",
+      "createdAt": "2026-06-04T00:00:00.000Z",
+      "updatedAt": "2026-06-04T00:00:00.000Z"
+    },
+    {
+      "name": "Admin",
+      "createdAt": "2026-06-04T00:00:00.000Z",
+      "updatedAt": "2026-06-04T00:00:00.000Z"
+    }
+  ],
+  "triggerCount": 1,
+  "active": false,
+  "pinData": {},
+  "versionId": "1",
+  "meta": {
+    "instanceId": "deliverybot-admin-panel"
+  }
+}

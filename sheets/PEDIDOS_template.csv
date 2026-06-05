@@ -1,0 +1,6 @@
+id_pedido,telegram_id,detalles_pedido,subtotal,impuesto,total_pago,estado,fecha,hora,hora_entrega,notas
+ORD-20260604-0001,100000001,"[{""id"":""BEB-001"",""nombre"":""Café Americano"",""qty"":2,""precio"":3.50},{""id"":""SNK-001"",""nombre"":""Empanada de Carne"",""qty"":1,""precio"":2.50}]",9.50,0.76,10.26,ENTREGADO,2026-06-04,07:30:00,07:45:00,
+ORD-20260604-0002,100000002,"[{""id"":""ALM-001"",""nombre"":""Sandwich de Pollo"",""qty"":1,""precio"":6.50}]",6.50,0.52,7.02,ENTREGADO,2026-06-04,08:15:00,08:35:00,Sin mayonesa
+ORD-20260604-0003,100000003,"[{""id"":""BEB-002"",""nombre"":""Café Latte"",""qty"":1,""precio"":4.50},{""id"":""SNK-003"",""nombre"":""Muffin de Arándano"",""qty"":2,""precio"":3.00}]",10.50,0.84,11.34,PREPARACION,2026-06-04,09:00:00,,
+ORD-20260604-0004,100000001,"[{""id"":""ALM-004"",""nombre"":""Bowl de Arroz con Pollo"",""qty"":1,""precio"":8.50},{""id"":""BEB-004"",""nombre"":""Jugo de Naranja"",""qty"":1,""precio"":4.00}]",12.50,1.00,13.50,RECIBIDO,2026-06-04,12:00:00,,
+ORD-20260604-0005,100000004,"[{""id"":""BEB-005"",""nombre"":""Smoothie de Fresa"",""qty"":1,""precio"":5.50},{""id"":""SNK-002"",""nombre"":""Croissant de Jamón y Queso"",""qty"":1,""precio"":3.50}]",9.00,0.72,9.72,ENTREGADO,2026-06-04,10:30:00,10:50:00,
