@@ -80,8 +80,8 @@
         "filtersUI": {
           "values": [
             {
-              "lookupColumn": "=telegram_id",
-              "lookupValue": "={{ $('Extract Data').item.json.telegram_id }}"
+              "lookupColumn": "telegram_id",
+              "lookupValue": "={{ $('Extract Data').first().json.telegram_id }}"
             }
           ]
         },
@@ -111,22 +111,17 @@
           "rules": [
             {
               "operation": "equal",
-              "value2": "TRACK_ORDER",
+              "value2": "CARRITO",
               "output": 1
             },
             {
               "operation": "equal",
-              "value2": "IDLE",
+              "value2": "TRACK_ORDER",
               "output": 2
             },
             {
               "operation": "equal",
-              "value2": "SELECCION_CANTIDAD",
-              "output": 3
-            },
-            {
-              "operation": "equal",
-              "value2": "CARRITO",
+              "value2": "CONFIRM_ORDER",
               "output": 3
             }
           ]
@@ -138,7 +133,7 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 1,
       "position": [
-        784,
+        880,
         768
       ]
     },
@@ -160,7 +155,9 @@
             "callback_data": "={{ $('Extract Data').first().json.callback_data }}",
             "estado_fsm": "={{ $json.estado_fsm }}",
             "carrito_json": "={{ $json.carrito_json }}",
-            "contexto_json": "={{ $json.contexto_json }}"
+            "contexto_json": "={{ $json.contexto_json }}",
+            "first_name": "={{ $('Extract Data').first().json.first_name }}",
+            "username": "={{ $('Extract Data').first().json.username }}"
           },
           "matchingColumns": [],
           "schema": [],
@@ -172,7 +169,7 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        992,
+        1100,
         560
       ],
       "id": "0434aba9-057f-47dc-9357-aba010d8e7f9",
@@ -196,7 +193,9 @@
             "callback_data": "={{ $('Extract Data').first().json.callback_data }}",
             "estado_fsm": "={{ $json.estado_fsm }}",
             "carrito_json": "={{ $json.carrito_json }}",
-            "contexto_json": "={{ $json.contexto_json }}"
+            "contexto_json": "={{ $json.contexto_json }}",
+            "first_name": "={{ $('Extract Data').first().json.first_name }}",
+            "username": "={{ $('Extract Data').first().json.username }}"
           },
           "matchingColumns": [],
           "schema": [],
@@ -208,8 +207,8 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        992,
-        672
+        1100,
+        880
       ],
       "id": "0e3b1a34-ce5b-4b78-a03b-467ab42bf7f9",
       "name": "Call 'WF_FLOW_ESTADO'"
@@ -232,7 +231,9 @@
             "callback_data": "={{ $('Extract Data').first().json.callback_data }}",
             "estado_fsm": "={{ $json.estado_fsm }}",
             "carrito_json": "={{ $json.carrito_json }}",
-            "contexto_json": "={{ $json.contexto_json }}"
+            "contexto_json": "={{ $json.contexto_json }}",
+            "first_name": "={{ $('Extract Data').first().json.first_name }}",
+            "username": "={{ $('Extract Data').first().json.username }}"
           },
           "matchingColumns": [],
           "schema": [],
@@ -244,8 +245,8 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        992,
-        864
+        1100,
+        1040
       ],
       "id": "8aaaebc3-8fce-4d29-a005-75a50bb24b3c",
       "name": "Call 'WF_FLOW_PEDIDO'"
@@ -268,7 +269,9 @@
             "callback_data": "={{ $('Extract Data').first().json.callback_data }}",
             "estado_fsm": "={{ $json.estado_fsm }}",
             "carrito_json": "={{ $json.carrito_json }}",
-            "contexto_json": "={{ $json.contexto_json }}"
+            "contexto_json": "={{ $json.contexto_json }}",
+            "first_name": "={{ $('Extract Data').first().json.first_name }}",
+            "username": "={{ $('Extract Data').first().json.username }}"
           },
           "matchingColumns": [],
           "schema": [],
@@ -280,8 +283,8 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        992,
-        1040
+        1100,
+        720
       ],
       "id": "dfb72b94-f600-4070-8ff3-b9f646736533",
       "name": "Call 'WF_FLOW_CARRITO"
@@ -425,7 +428,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const chatId = $('Extract Data').first().json.chat_id;\nconst subworkflows = [\n  {name: \"Call 'WF_FLOW_MENU'\"},\n  {name: \"Call 'WF_FLOW_ESTADO'\"},\n  {name: \"Call 'WF_FLOW_PEDIDO'\"},\n  {name: \"Call 'WF_FLOW_CARRITO\"}\n];\nlet mensaje = 'Mensaje por defecto';\nlet replyMarkup = {};\nfor (const sw of subworkflows) {\n  try {\n    const data = $(sw.name).first();\n    if (data) {\n      mensaje = data.json.mensaje || mensaje;\n      replyMarkup = data.json.reply_markup || replyMarkup;\n      break;\n    }\n  } catch(e) { continue; }\n}\nreturn [{ json: { chat_id: chatId, text: mensaje, reply_markup: replyMarkup } }];"
+        "jsCode": "const chatId = $('Extract Data').first().json.chat_id;\nconst subworkflows = [\n  \"Call 'WF_FLOW_MENU'\",\n  \"Call 'WF_FLOW_ESTADO'\",\n  \"Call 'WF_FLOW_PEDIDO'\",\n  \"Call 'WF_FLOW_CARRITO\"\n];\nlet mensaje = 'Ocurri\\u00f3 un error. Escribe /start para reiniciar.';\nlet replyMarkup = {};\nlet sessionUpdates = { estado_fsm: 'MENU_PRINCIPAL', carrito_json: '[]', contexto_json: '{}' };\n\nfor (const sw of subworkflows) {\n  try {\n    const data = $(sw).first();\n    if (data && data.json && data.json.mensaje) {\n      mensaje = data.json.mensaje;\n      replyMarkup = data.json.reply_markup || {};\n      sessionUpdates = data.json.session_updates || sessionUpdates;\n      break;\n    }\n  } catch(e) { continue; }\n}\n\nreturn [{ json: { chat_id: chatId, text: mensaje, reply_markup: replyMarkup, session_updates: sessionUpdates } }];\n"
       },
       "id": "64868f78-b912-48d7-870f-eb8aef8a2532",
       "name": "Prepare Telegram Payload",
@@ -497,6 +500,19 @@
         192,
         448
       ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const extractData = $('Extract Data').first().json;\nconst sessionData = $input.first().json;\nconst cb = extractData.callback_data || '';\nconst text = extractData.text || '';\n\nlet estado = sessionData.estado_fsm || 'MENU_PRINCIPAL';\n\n// Override based on callback_data for immediate routing\nif (cb !== '') {\n  if (cb.startsWith('cat_') || cb.startsWith('add_') || cb === 'main_menu' || cb === 'back_menu' || cb === 'cat_ver_todas' || cb === 'cart_ver_historial' || cb === 'confirm_track') {\n    estado = 'MENU_PRINCIPAL';\n  } else if (cb === 'view_cart') {\n    estado = 'CARRITO';\n  } else if (cb === 'confirm_yes') {\n    estado = 'CONFIRM_ORDER';\n  }\n}\n\nif (text === '/start') {\n  estado = 'MENU_PRINCIPAL';\n}\n\nreturn [{ json: { ...sessionData, estado_fsm: estado } }];\n"
+      },
+      "id": "smart-router-node",
+      "name": "Smart Router",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        688,
+        768
+      ]
     }
   ],
   "pinData": {},
@@ -532,7 +548,7 @@
       "main": [
         [
           {
-            "node": "Call 'WF_FLOW_MENU'",
+            "node": "Load Session",
             "type": "main",
             "index": 0
           }
@@ -550,7 +566,7 @@
       "main": [
         [
           {
-            "node": "FSM Router",
+            "node": "Smart Router",
             "type": "main",
             "index": 0
           }
@@ -568,6 +584,13 @@
         ],
         [
           {
+            "node": "Call 'WF_FLOW_CARRITO",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
             "node": "Call 'WF_FLOW_ESTADO'",
             "type": "main",
             "index": 0
@@ -579,13 +602,6 @@
             "type": "main",
             "index": 0
           }
-        ],
-        [
-          {
-            "node": "Call 'WF_FLOW_CARRITO",
-            "type": "main",
-            "index": 0
-          }
         ]
       ]
     },
@@ -593,7 +609,7 @@
       "main": [
         [
           {
-            "node": "Update Session",
+            "node": "Prepare Telegram Payload",
             "type": "main",
             "index": 0
           }
@@ -604,7 +620,7 @@
       "main": [
         [
           {
-            "node": "Update Session",
+            "node": "Prepare Telegram Payload",
             "type": "main",
             "index": 0
           }
@@ -615,7 +631,7 @@
       "main": [
         [
           {
-            "node": "Update Session",
+            "node": "Prepare Telegram Payload",
             "type": "main",
             "index": 0
           }
@@ -623,17 +639,6 @@
       ]
     },
     "Call 'WF_FLOW_CARRITO": {
-      "main": [
-        [
-          {
-            "node": "Update Session",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Update Session": {
       "main": [
         [
           {
@@ -651,6 +656,11 @@
             "node": "Send Telegram Message (HTTP)",
             "type": "main",
             "index": 0
+          },
+          {
+            "node": "Update Session",
+            "type": "main",
+            "index": 0
           }
         ]
       ]
@@ -660,6 +670,17 @@
         [
           {
             "node": "Answer Callback (HTTP)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Smart Router": {
+      "main": [
+        [
+          {
+            "node": "FSM Router",
             "type": "main",
             "index": 0
           }

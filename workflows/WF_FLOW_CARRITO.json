@@ -3,62 +3,31 @@
   "nodes": [
     {
       "parameters": {},
-      "id": "1",
+      "id": "cart-trigger",
       "name": "Execute Workflow Trigger",
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1,
-      "position": [250, 300]
+      "position": [
+        250,
+        300
+      ]
     },
     {
       "parameters": {
-        "dataType": "string",
-        "value1": "={{ $json.estado_fsm }}",
-        "rules": {
-          "rules": [
-            {
-              "operation": "equal",
-              "value2": "SELECCION_CANTIDAD",
-              "output": 0
-            },
-            {
-              "operation": "equal",
-              "value2": "CARRITO",
-              "output": 1
-            }
-          ]
-        },
-        "fallbackOutput": 2
+        "jsCode": "const inputData = $('Execute Workflow Trigger').first().json;\nconst cb = inputData.callback_data || '';\nlet cart = [];\ntry { cart = JSON.parse(inputData.carrito_json || '[]'); } catch(e) {}\n\nif (cart.length === 0) {\n  return [{\n    json: {\n      mensaje: '\\u{1F6D2} Tu carrito est\\u00e1 vac\\u00edo.',\n      reply_markup: { inline_keyboard: [[{ text: '\\u{1F6D2} Ver Men\\u00fa', callback_data: 'cat_ver_todas' }]] },\n      session_updates: { estado_fsm: 'MENU_PRINCIPAL', carrito_json: '[]', contexto_json: '{}' }\n    }\n  }];\n}\n\nlet cartText = '\\u{1F6D2} *Tu Carrito*\\\\n\\\\n';\nlet total = 0;\ncart.forEach((item, i) => {\n  const lineTotal = item.qty * item.precio;\n  total += lineTotal;\n  cartText += (i + 1) + '. ' + item.nombre + ' x' + item.qty + ' \\u2014 $' + lineTotal.toFixed(2) + '\\\\n';\n});\ncartText += '\\\\n\\u{1F4B0} *Total: $' + total.toFixed(2) + '*';\n\nreturn [{\n  json: {\n    mensaje: cartText,\n    reply_markup: { inline_keyboard: [\n      [{ text: '\\u2795 Agregar m\\u00e1s', callback_data: 'cat_ver_todas' }],\n      [{ text: '\\u2705 Confirmar Pedido', callback_data: 'confirm_yes' }]\n    ]},\n    session_updates: { estado_fsm: 'CARRITO', carrito_json: JSON.stringify(cart), contexto_json: '{}' }\n  }\n}];\n"
       },
-      "id": "2",
-      "name": "Cart Router",
-      "type": "n8n-nodes-base.switch",
-      "typeVersion": 1,
-      "position": [450, 300]
-    },
-    {
-      "parameters": {
-        "jsCode": "return [{\n  json: {\n    nuevo_estado: 'CARRITO',\n    mensaje: '🛒 *Tu Carrito*\\n\\n1. ☕ Café Americano x1 — $3.50\\n\\n💰 Subtotal: $3.50',\n    reply_markup: {\n      inline_keyboard: [\n        [{ text: '➕ Agregar más', callback_data: 'action_add_more' }],\n        [{ text: '✅ Confirmar Pedido', callback_data: 'action_confirm' }]\n      ]\n    },\n    session_updates: {\n      estado_fsm: 'CARRITO',\n      carrito_json: '[{\"id\":\"BEB-001\",\"qty\":1}]',\n      contexto_json: '{}'\n    }\n  }\n}];"
-      },
-      "id": "3",
+      "id": "cart-format",
       "name": "Format Cart",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [650, 150]
+      "position": [
+        500,
+        300
+      ]
     }
   ],
   "connections": {
     "Execute Workflow Trigger": {
-      "main": [
-        [
-          {
-            "node": "Cart Router",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Cart Router": {
       "main": [
         [
           {
@@ -69,5 +38,10 @@
         ]
       ]
     }
-  }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
 }

@@ -3,42 +3,82 @@
   "nodes": [
     {
       "parameters": {},
-      "id": "1",
+      "id": "pedido-trigger",
       "name": "Execute Workflow Trigger",
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1,
-      "position": [250, 300]
+      "position": [
+        250,
+        300
+      ]
     },
     {
       "parameters": {
-        "dataType": "string",
-        "value1": "={{ $json.callback_data }}",
-        "rules": {
-          "rules": [
-            {
-              "operation": "equal",
-              "value2": "confirm_yes",
-              "output": 0
-            }
-          ]
+        "jsCode": "const inputData = $('Execute Workflow Trigger').first().json;\nlet cart = [];\ntry { cart = JSON.parse(inputData.carrito_json || '[]'); } catch(e) {}\nlet total = 0;\ncart.forEach(item => { total += item.qty * item.precio; });\n\nconst now = new Date();\nconst dateStr = now.toISOString().slice(0, 10).replace(/-/g, '');\nconst randomNum = Math.floor(1000 + Math.random() * 9000);\nconst orderId = 'ORD-' + dateStr + '-' + randomNum;\nconst detalles = cart.map(i => i.nombre + ' x' + i.qty).join(', ');\n\nreturn [{ json: {\n  orderId: orderId,\n  total: total,\n  detalles: detalles,\n  carrito_json: inputData.carrito_json || '[]',\n  telegram_id: inputData.telegram_id,\n  chat_id: inputData.chat_id,\n  first_name: inputData.first_name || 'Usuario',\n  fecha: now.toISOString().split('T')[0],\n  hora: now.toTimeString().split(' ')[0]\n}}];\n"
+      },
+      "id": "pedido-calc",
+      "name": "Calculate Total",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        500,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1ENztX5Jw-W8upEOijCgdVbi2_cHfBbOO0Y4O0s6rpuw",
+          "mode": "id"
         },
-        "fallbackOutput": 1
+        "sheetName": {
+          "__rl": true,
+          "value": "PEDIDOS",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id_pedido": "={{ $json.orderId }}",
+            "id_usuario": "={{ $json.telegram_id }}",
+            "detalles_pedido": "={{ $json.detalles }}",
+            "total_pago": "={{ $json.total }}",
+            "estado": "RECIBIDO",
+            "fecha": "={{ $json.fecha }}",
+            "hora": "={{ $json.hora }}"
+          }
+        },
+        "options": {}
       },
-      "id": "2",
-      "name": "Pedido Router",
-      "type": "n8n-nodes-base.switch",
-      "typeVersion": 1,
-      "position": [450, 300]
+      "id": "pedido-write",
+      "name": "Write Pedido",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        750,
+        300
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "15AvKlr14Qt1VZsU",
+          "name": "Google Sheets account"
+        }
+      }
     },
     {
       "parameters": {
-        "jsCode": "return [{\n  json: {\n    nuevo_estado: 'IDLE',\n    mensaje: '✅ *¡Pedido confirmado!*\\n\\n📦 Orden: #ORD-20260604-0042\\n💰 Total: $14.04\\n📍 Estado: Recibido\\n\\nTe notificaremos cuando esté en preparación. 🍳',\n    reply_markup: {\n      inline_keyboard: []\n    },\n    session_updates: {\n      estado_fsm: 'IDLE',\n      carrito_json: '[]',\n      contexto_json: '{}'\n    }\n  }\n}];"
+        "jsCode": "const calc = $('Calculate Total').first().json;\nreturn [{\n  json: {\n    mensaje: '\\u2705 *\\u00a1Pedido confirmado!*\\\\n\\\\n\\u{1F4E6} Orden: #' + calc.orderId + '\\\\n\\u{1F4B0} Total: $' + parseFloat(calc.total).toFixed(2) + '\\\\n\\u{1F4CD} Estado: Recibido\\\\n\\\\nTe notificaremos cuando est\\u00e9 en preparaci\\u00f3n. \\u{1F373}',\n    reply_markup: { inline_keyboard: [[{ text: '\\u{1F3E0} Men\\u00fa Principal', callback_data: 'main_menu' }]] },\n    session_updates: { estado_fsm: 'IDLE', carrito_json: '[]', contexto_json: '{}' }\n  }\n}];\n"
       },
-      "id": "3",
+      "id": "pedido-success",
       "name": "Format Success",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [650, 150]
+      "position": [
+        1000,
+        300
+      ]
     }
   ],
   "connections": {
@@ -46,14 +86,25 @@
       "main": [
         [
           {
-            "node": "Pedido Router",
+            "node": "Calculate Total",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Pedido Router": {
+    "Calculate Total": {
+      "main": [
+        [
+          {
+            "node": "Write Pedido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write Pedido": {
       "main": [
         [
           {
@@ -64,5 +115,10 @@
         ]
       ]
     }
-  }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
 }
