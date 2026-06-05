@@ -100,83 +100,8 @@
             "total_pago": "={{ $json.total }}",
             "estado": "RECIBIDO",
             "fecha": "={{ $json.fecha }}",
-            "hora": "={{ $json.hora }}",
-            "carrito_json": "={{ $json.carrito_json }}"
-          },
-          "schema": [
-            {
-              "id": "id_pedido",
-              "displayName": "id_pedido",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "telegram_id",
-              "displayName": "telegram_id",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "detalles_pedido",
-              "displayName": "detalles_pedido",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "total_pago",
-              "displayName": "total_pago",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "estado",
-              "displayName": "estado",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "fecha",
-              "displayName": "fecha",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "hora",
-              "displayName": "hora",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "carrito_json",
-              "displayName": "carrito_json",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            }
-          ]
+            "hora": "={{ $json.hora }}"
+          }
         },
         "options": {}
       },
