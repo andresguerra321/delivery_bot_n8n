@@ -11,32 +11,18 @@
     },
     {
       "parameters": {
+        "dataType": "string",
+        "value1": "={{ $json.estado_fsm }}",
         "rules": {
           "rules": [
             {
-              "intent": "rule1",
-              "conditions": {
-                "string": [
-                  {
-                    "value1": "={{ $json.estado_fsm }}",
-                    "operation": "equal",
-                    "value2": "SELECCION_CANTIDAD"
-                  }
-                ]
-              },
+              "operation": "equal",
+              "value2": "SELECCION_CANTIDAD",
               "output": 0
             },
             {
-              "intent": "rule2",
-              "conditions": {
-                "string": [
-                  {
-                    "value1": "={{ $json.estado_fsm }}",
-                    "operation": "equal",
-                    "value2": "CARRITO"
-                  }
-                ]
-              },
+              "operation": "equal",
+              "value2": "CARRITO",
               "output": 1
             }
           ]

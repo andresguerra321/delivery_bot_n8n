@@ -11,19 +11,13 @@
     },
     {
       "parameters": {
+        "dataType": "string",
+        "value1": "={{ $json.callback_data }}",
         "rules": {
           "rules": [
             {
-              "intent": "rule1",
-              "conditions": {
-                "string": [
-                  {
-                    "value1": "={{ $json.callback_data }}",
-                    "operation": "equal",
-                    "value2": "confirm_yes"
-                  }
-                ]
-              },
+              "operation": "equal",
+              "value2": "confirm_yes",
               "output": 0
             }
           ]

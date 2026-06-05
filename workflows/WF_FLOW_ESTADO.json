@@ -11,19 +11,13 @@
     },
     {
       "parameters": {
+        "dataType": "string",
+        "value1": "={{ $json.estado_fsm }}",
         "rules": {
           "rules": [
             {
-              "intent": "rule1",
-              "conditions": {
-                "string": [
-                  {
-                    "value1": "={{ $json.estado_fsm }}",
-                    "operation": "equal",
-                    "value2": "TRACK_ORDER"
-                  }
-                ]
-              },
+              "operation": "equal",
+              "value2": "TRACK_ORDER",
               "output": 0
             }
           ]
