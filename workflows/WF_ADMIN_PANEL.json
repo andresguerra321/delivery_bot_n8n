@@ -200,7 +200,11 @@
           "mappingMode": "defineBelow",
           "value": {
             "estado": "PREPARACION"
-          }
+          },
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
         },
         "options": {
           "cellFormat": "USER_ENTERED"
@@ -356,7 +360,11 @@
           "mappingMode": "defineBelow",
           "value": {
             "estado": "EN_CAMINO"
-          }
+          },
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
         },
         "options": {
           "cellFormat": "USER_ENTERED"
@@ -507,7 +515,11 @@
           "value": {
             "estado": "ENTREGADO",
             "hora_entrega": "={{ new Date().toISOString() }}"
-          }
+          },
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
         },
         "options": {
           "cellFormat": "USER_ENTERED"
@@ -654,7 +666,11 @@
           "mappingMode": "defineBelow",
           "value": {
             "puntos_fidelidad": "={{ parseInt($('Read User Loyalty').first().json.puntos_fidelidad || '0') + 10 }}"
-          }
+          },
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
         },
         "options": {
           "cellFormat": "USER_ENTERED"
@@ -738,7 +754,11 @@
           "mappingMode": "defineBelow",
           "value": {
             "estado": "CANCELADO"
-          }
+          },
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
         },
         "options": {
           "cellFormat": "USER_ENTERED"
@@ -866,7 +886,11 @@
           "mappingMode": "defineBelow",
           "value": {
             "stock": "={{ parseInt($('Read Menu Item Stock').first().json.stock || '0') + parseInt($('Parse Cart for Stock Restore').first().json.cantidad_a_restaurar || '0') }}"
-          }
+          },
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
         },
         "options": {
           "cellFormat": "USER_ENTERED"
@@ -978,7 +1002,11 @@
           "mode": "name"
         },
         "columns": {
-          "mappingMode": "autoMapInputData"
+          "mappingMode": "autoMapInputData",
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
         },
         "options": {}
       },

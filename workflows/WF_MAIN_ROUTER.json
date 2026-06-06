@@ -289,26 +289,6 @@
           "value": "",
           "mode": "id"
         },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "telegram_id": "={{ $('Extract Data').first().json.telegram_id }}",
-            "chat_id": "={{ $('Extract Data').first().json.chat_id }}",
-            "text": "={{ $('Extract Data').first().json.text }}",
-            "callback_data": "={{ $('Extract Data').first().json.callback_data }}",
-            "estado_fsm": "={{ $json.estado_fsm }}",
-            "carrito_json": "={{ $json.carrito_json }}",
-            "contexto_json": "={{ $json.contexto_json }}",
-            "first_name": "={{ $('Extract Data').first().json.first_name }}",
-            "username": "={{ $('Extract Data').first().json.username }}",
-            "callback_query_id": "={{ $('Extract Data').first().json.callback_query_id }}",
-            "message_id": "={{ $('Extract Data').first().json.message_id }}"
-          },
-          "matchingColumns": [],
-          "schema": [],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": true
-        },
         "options": {}
       },
       "type": "n8n-nodes-base.executeWorkflow",
