@@ -123,11 +123,6 @@
               "operation": "equal",
               "value2": "CONFIRM_ORDER",
               "output": 3
-            },
-            {
-              "operation": "equal",
-              "value2": "ADMIN_ROUTE",
-              "output": 4
             }
           ]
         },
@@ -138,7 +133,38 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 1,
       "position": [
-        880,
+        980,
+        768
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "cond-admin-route",
+              "leftValue": "={{ $json.estado_fsm }}",
+              "rightValue": "ADMIN_ROUTE",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "if-admin-route-node",
+      "name": "Is Admin Route?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        780,
         768
       ]
     },
@@ -274,7 +300,9 @@
             "carrito_json": "={{ $json.carrito_json }}",
             "contexto_json": "={{ $json.contexto_json }}",
             "first_name": "={{ $('Extract Data').first().json.first_name }}",
-            "username": "={{ $('Extract Data').first().json.username }}"
+            "username": "={{ $('Extract Data').first().json.username }}",
+            "callback_query_id": "={{ $('Extract Data').first().json.callback_query_id }}",
+            "message_id": "={{ $('Extract Data').first().json.message_id }}"
           },
           "matchingColumns": [],
           "schema": [],
@@ -643,13 +671,6 @@
             "type": "main",
             "index": 0
           }
-        ],
-        [
-          {
-            "node": "Call 'WF_ADMIN_PANEL'",
-            "type": "main",
-            "index": 0
-          }
         ]
       ]
     },
@@ -726,6 +747,24 @@
     },
     "Smart Router": {
       "main": [
+        [
+          {
+            "node": "Is Admin Route?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Admin Route?": {
+      "main": [
+        [
+          {
+            "node": "Call 'WF_ADMIN_PANEL'",
+            "type": "main",
+            "index": 0
+          }
+        ],
         [
           {
             "node": "FSM Router",

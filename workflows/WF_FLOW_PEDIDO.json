@@ -3,18 +3,17 @@
   "nodes": [
     {
       "parameters": {},
-      "id": "p-trigger",
+      "id": "080b3f32-4cfd-4850-a403-2a45b31decf2",
       "name": "Execute Workflow Trigger",
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1,
       "position": [
-        200,
-        300
+        -384,
+        528
       ]
     },
     {
       "parameters": {
-        "operation": "read",
         "documentId": {
           "__rl": true,
           "value": "1ENztX5Jw-W8upEOijCgdVbi2_cHfBbOO0Y4O0s6rpuw",
@@ -30,13 +29,13 @@
         },
         "options": {}
       },
-      "id": "p-read-menu",
+      "id": "621a2bac-fe71-4d23-9029-d71e45be4796",
       "name": "Read Menu",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
       "position": [
-        400,
-        300
+        -192,
+        528
       ],
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -49,13 +48,13 @@
       "parameters": {
         "jsCode": "const inputData = $('Execute Workflow Trigger').first().json;\nconst menuItems = $('Read Menu').all().map(i => i.json);\nlet cart = [];\ntry { cart = JSON.parse(inputData.carrito_json || '[]'); } catch(e) {}\n\nconst TAX_RATE = 0.12;\nlet subtotal = 0;\nlet errors = [];\n\nfor (const item of cart) {\n  const menuItem = menuItems.find(m => m.id_producto === item.id);\n  if (!menuItem) {\n    errors.push(item.nombre + ' ya no está disponible');\n    continue;\n  }\n  const stock = parseInt(menuItem.stock);\n  if (stock < item.qty) {\n    errors.push(item.nombre + ': solo quedan ' + stock + ' unidades');\n    continue;\n  }\n  subtotal += item.qty * parseFloat(menuItem.precio);\n}\n\nconst iva = Math.round(subtotal * TAX_RATE * 100) / 100;\nconst total = Math.round((subtotal + iva) * 100) / 100;\n\nconst now = new Date();\nconst dateStr = now.toISOString().slice(0, 10).replace(/-/g, '');\nconst randomNum = Math.floor(1000 + Math.random() * 9000);\nconst orderId = 'ORD-' + dateStr + '-' + randomNum;\nconst detalles = cart.map(i => i.nombre + ' x' + i.qty).join(', ');\n\nreturn [{ json: {\n  valid: errors.length === 0,\n  errors: errors,\n  id_pedido: orderId, subtotal: subtotal, iva: iva, total_pago: total, detalles_pedido: detalles, estado: 'RECIBIDO',\n  \n  telegram_id: inputData.telegram_id,\n  chat_id: inputData.chat_id,\n  first_name: inputData.first_name || 'Usuario',\n  fecha: now.toISOString().split('T')[0],\n  hora: now.toTimeString().split(' ')[0],\n  carrito_json: inputData.carrito_json\n}}];"
       },
-      "id": "p-validate",
+      "id": "616c3101-9d3e-478a-9652-ceb59b070f08",
       "name": "Validate & Calculate",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        600,
-        300
+        16,
+        528
       ]
     },
     {
@@ -69,13 +68,13 @@
           ]
         }
       },
-      "id": "p-check",
+      "id": "990af1d8-b1a0-43ea-abed-1a8c2715cc2f",
       "name": "Stock OK?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 1,
       "position": [
-        800,
-        300
+        224,
+        528
       ]
     },
     {
@@ -96,13 +95,13 @@
         },
         "options": {}
       },
-      "id": "p-write",
+      "id": "1ca92369-1243-40b7-a3e8-61a78ecc34a0",
       "name": "Write Pedido",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
       "position": [
-        1000,
-        200
+        416,
+        416
       ],
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -115,13 +114,13 @@
       "parameters": {
         "jsCode": "const calc = $('Validate & Calculate').first().json;\nconst inputData = $('Execute Workflow Trigger').first().json;\n\nconst text = '🛎 *Nuevo Pedido Recibido*\\n\\n📦 Orden: #' + calc.id_pedido + '\\n👤 ' + calc.first_name + '\\n📋 ' + calc.detalles_pedido + '\\n💵 Total: $' + calc.total_pago.toFixed(2);\n\nconst keyboard = {\n  inline_keyboard: [\n    [\n      { text: '🍳 Preparar', callback_data: 'admin_prep_' + calc.id_pedido },\n      { text: '❌ Rechazar', callback_data: 'admin_reject_' + calc.id_pedido }\n    ]\n  ]\n};\n\nreturn [{ json: {\n  chat_id: -5174866298,\n  text: text,\n  parse_mode: 'Markdown',\n  reply_markup: keyboard\n}}];"
       },
-      "id": "p-kitchen-payload",
+      "id": "9d05bc24-65b6-4869-a279-371b968f90ef",
       "name": "Kitchen Payload",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1200,
-        200
+        624,
+        416
       ]
     },
     {
@@ -135,13 +134,13 @@
           "timeout": 10000
         }
       },
-      "id": "p-notify-kitchen",
+      "id": "b61fb10d-ba05-46f4-8260-d320b35c8178",
       "name": "Notify Kitchen",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
       "position": [
-        1400,
-        200
+        816,
+        416
       ],
       "onError": "continueRegularOutput"
     },
@@ -149,13 +148,13 @@
       "parameters": {
         "jsCode": "const menuItems = $('Read Menu').all().map(i => i.json);\nconst calc = $('Validate & Calculate').first().json;\nlet cart = [];\ntry { cart = JSON.parse(calc.carrito_json || '[]'); } catch(e) {}\n\nconst results = [];\nfor (const cartItem of cart) {\n  const menuItem = menuItems.find(m => m.id_producto === cartItem.id);\n  if (menuItem) {\n    results.push({\n      json: {\n        id_producto: cartItem.id,\n        stock: (parseInt(menuItem.stock) - cartItem.qty).toString()\n      }\n    });\n  }\n}\nreturn results.length > 0 ? results : [{ json: { id_producto: 'none', stock: '0' } }];"
       },
-      "id": "p-prep-deduct",
+      "id": "a60b924a-2c32-4750-adca-c9d5ba56021f",
       "name": "Prepare Deductions",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1600,
-        200
+        1024,
+        416
       ]
     },
     {
@@ -164,39 +163,140 @@
         "documentId": {
           "__rl": true,
           "value": "1ENztX5Jw-W8upEOijCgdVbi2_cHfBbOO0Y4O0s6rpuw",
-          "mode": "id"
+          "mode": "list",
+          "cachedResultName": "Hoja de cálculo sin título",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ENztX5Jw-W8upEOijCgdVbi2_cHfBbOO0Y4O0s6rpuw/edit?usp=drivesdk"
         },
         "sheetName": {
           "__rl": true,
-          "value": "MENU",
-          "mode": "name"
+          "value": 696573654,
+          "mode": "list",
+          "cachedResultName": "MENU",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ENztX5Jw-W8upEOijCgdVbi2_cHfBbOO0Y4O0s6rpuw/edit#gid=696573654"
         },
         "columns": {
-          "mappingMode": "defineBelow",
+          "mappingMode": "autoMapInputData",
           "value": {
-            "stock": "={{ $json.stock }}"
+            "stock": "={{ $json.stock }}",
+            "row_number": 0
           },
           "matchingColumns": [
             "id_producto"
-          ]
-        },
-        "filtersUI": {
-          "values": [
+          ],
+          "schema": [
             {
-              "lookupColumn": "id_producto",
-              "lookupValue": "={{ $json.id_producto }}"
+              "id": "id_producto",
+              "displayName": "id_producto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "nombre",
+              "displayName": "nombre",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "descripcion",
+              "displayName": "descripcion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "precio",
+              "displayName": "precio",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "categoria",
+              "displayName": "categoria",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "stock",
+              "displayName": "stock",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "stock_minimo",
+              "displayName": "stock_minimo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "activo",
+              "displayName": "activo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "version",
+              "displayName": "version",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
             }
-          ]
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
         },
         "options": {}
       },
-      "id": "p-deduct-stock",
+      "id": "6568268f-5750-4776-b5d8-b9406ac28ca2",
       "name": "Deduct Stock",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
       "position": [
-        1800,
-        200
+        1216,
+        416
       ],
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -209,29 +309,30 @@
       "parameters": {
         "jsCode": "const calc = $('Validate & Calculate').first().json;\nreturn [{\n  json: {\n    mensaje: '✅ *¡Pedido confirmado!*\\n\\n📦 Orden: #' + calc.id_pedido + '\\n💰 Subtotal: $' + calc.subtotal.toFixed(2) + '\\n📊 IVA (12%): $' + calc.iva.toFixed(2) + '\\n💵 Total: $' + calc.total_pago.toFixed(2) + '\\n📍 Estado: Recibido\\n\\nTe notificaremos cuando esté en preparación. 🍳',\n    reply_markup: { inline_keyboard: [[{ text: '🏠 Menú Principal', callback_data: 'main_menu' }]] },\n    session_updates: { estado_fsm: 'IDLE', carrito_json: '[]', contexto_json: '{}' }\n  }\n}];"
       },
-      "id": "p-success",
+      "id": "566bee19-5b14-4c93-aef1-72951a86ac76",
       "name": "Format Success",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2000,
-        200
+        1424,
+        416
       ]
     },
     {
       "parameters": {
         "jsCode": "const calc = $('Validate & Calculate').first().json;\nconst errorList = calc.errors.join('\\n• ');\nreturn [{\n  json: {\n    mensaje: '⚠️ *No se pudo procesar tu pedido*\\n\\n• ' + errorList + '\\n\\nPor favor, ajusta tu carrito e intenta de nuevo.',\n    reply_markup: { inline_keyboard: [\n      [{ text: '🛒 Ver Carrito', callback_data: 'view_cart' }],\n      [{ text: '🏠 Menú Principal', callback_data: 'main_menu' }]\n    ]},\n    session_updates: { estado_fsm: 'CARRITO', carrito_json: calc.carrito_json, contexto_json: '{}' }\n  }\n}];"
       },
-      "id": "p-error",
+      "id": "8aaaf7ec-a929-454e-9127-b08538ca6332",
       "name": "Format Error",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1000,
-        450
+        416,
+        672
       ]
     }
   ],
+  "pinData": {},
   "connections": {
     "Execute Workflow Trigger": {
       "main": [
@@ -342,7 +443,14 @@
   },
   "active": true,
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "binaryMode": "separate"
   },
+  "versionId": "0d14eaed-0102-4a3f-9d5c-610c35e6a40e",
+  "meta": {
+    "instanceId": "299e35ebd91eed53cf15d79c3470f1d21bc49e880bfdffa38e7da52cebfa1391"
+  },
+  "nodeGroups": [],
+  "id": "XDhGzg4ojSAY9qLS",
   "tags": []
 }

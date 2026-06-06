@@ -23,7 +23,7 @@
           "conditions": [
             {
               "id": "cond-admin-check",
-              "leftValue": "={{ $json.callback_query.data }}",
+              "leftValue": "=={{ $json.callback_data }}",
               "rightValue": "admin_",
               "operator": {
                 "type": "string",
@@ -45,7 +45,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Parse admin callback data\n// Format: admin_{action}_{orderId}\n// e.g. admin_prep_ORD-20260604-0042\nconst callbackData = $('Telegram Trigger').first().json.callback_query.data;\nconst chatId = $('Telegram Trigger').first().json.callback_query.message.chat.id;\nconst messageId = $('Telegram Trigger').first().json.callback_query.message.message_id;\nconst parts = callbackData.split('_');\n\n// parts[0] = 'admin'\n// parts[1] = action (prep, enroute, delivered, reject)\n// parts[2..] = orderId (may contain underscores, so rejoin)\nconst action = parts[1];\nconst orderId = parts.slice(2).join('_');\n\nreturn [{\n  json: {\n    action,\n    orderId,\n    chatId,\n    messageId,\n    callbackData\n  }\n}];"
+        "jsCode": "// Parse admin callback data\n// Format: admin_{action}_{orderId}\n// e.g. admin_prep_ORD-20260604-0042\nconst callbackData = $input.first().json.callback_data;\nconst chatId = $input.first().json.chat_id;\nconst messageId = $input.first().json.message_id;\nconst parts = callbackData.split('_');\n\n// parts[0] = 'admin'\n// parts[1] = action (prep, enroute, delivered, reject)\n// parts[2..] = orderId (may contain underscores, so rejoin)\nconst action = parts[1];\nconst orderId = parts.slice(2).join('_');\n\nreturn [{\n  json: {\n    action,\n    orderId,\n    chatId,\n    messageId,\n    callbackData\n  }\n}];"
       },
       "id": "a1000000-0000-0000-0000-000000000003",
       "name": "Parse Admin Action",
@@ -922,7 +922,7 @@
       "parameters": {
         "resource": "callback",
         "operation": "answerQuery",
-        "queryId": "={{ $('Telegram Trigger').first().json.callback_query.id }}",
+        "queryId": "={{ $json.callback_query_id }}",
         "additionalFields": {}
       },
       "id": "a1000000-0000-0000-0000-000000000050",
