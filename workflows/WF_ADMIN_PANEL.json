@@ -23,7 +23,7 @@
           "conditions": [
             {
               "id": "cond-admin-check",
-              "leftValue": "=={{ $json.callback_data }}",
+              "leftValue": "={{ $json.callback_data }}",
               "rightValue": "admin_",
               "operator": {
                 "type": "string",

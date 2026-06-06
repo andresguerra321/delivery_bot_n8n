@@ -582,6 +582,53 @@
         688,
         768
       ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a1",
+              "name": "telegram_id",
+              "value": "={{ $('Extract Data').first().json.telegram_id }}",
+              "type": "string"
+            },
+            {
+              "id": "a2",
+              "name": "chat_id",
+              "value": "={{ $('Extract Data').first().json.chat_id }}",
+              "type": "string"
+            },
+            {
+              "id": "a3",
+              "name": "message_id",
+              "value": "={{ $('Extract Data').first().json.message_id }}",
+              "type": "string"
+            },
+            {
+              "id": "a4",
+              "name": "callback_query_id",
+              "value": "={{ $('Extract Data').first().json.callback_query_id }}",
+              "type": "string"
+            },
+            {
+              "id": "a5",
+              "name": "callback_data",
+              "value": "={{ $('Extract Data').first().json.callback_data }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "prepare-admin-payload",
+      "name": "Prepare Admin Payload",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.3,
+      "position": [
+        980,
+        1000
+      ]
     }
   ],
   "pinData": {},
@@ -760,7 +807,7 @@
       "main": [
         [
           {
-            "node": "Call 'WF_ADMIN_PANEL'",
+            "node": "Prepare Admin Payload",
             "type": "main",
             "index": 0
           }
@@ -768,6 +815,17 @@
         [
           {
             "node": "FSM Router",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Admin Payload": {
+      "main": [
+        [
+          {
+            "node": "Call 'WF_ADMIN_PANEL'",
             "type": "main",
             "index": 0
           }
