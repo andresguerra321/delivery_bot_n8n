@@ -113,7 +113,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const calc = $('Validate & Calculate').first().json;\nconst inputData = $('Execute Workflow Trigger').first().json;\n\nconst text = '🛎 *Nuevo Pedido Recibido*\\n\\n📦 Orden: #' + calc.id_pedido + '\\n👤 ' + calc.first_name + '\\n📋 ' + calc.detalles_pedido + '\\n💵 Total: $' + calc.total_pago.toFixed(2);\n\nconst keyboard = {\n  inline_keyboard: [\n    [\n      { text: '🍳 Preparar', callback_data: 'admin_prep_' + calc.id_pedido },\n      { text: '❌ Rechazar', callback_data: 'admin_reject_' + calc.id_pedido }\n    ]\n  ]\n};\n\nreturn [{ json: {\n  chat_id: inputData.chat_id,\n  text: text,\n  parse_mode: 'Markdown',\n  reply_markup: keyboard\n}}];"
+        "jsCode": "const calc = $('Validate & Calculate').first().json;\nconst inputData = $('Execute Workflow Trigger').first().json;\n\nconst text = '🛎 *Nuevo Pedido Recibido*\\n\\n📦 Orden: #' + calc.id_pedido + '\\n👤 ' + calc.first_name + '\\n📋 ' + calc.detalles_pedido + '\\n💵 Total: $' + calc.total_pago.toFixed(2);\n\nconst keyboard = {\n  inline_keyboard: [\n    [\n      { text: '🍳 Preparar', callback_data: 'admin_prep_' + calc.id_pedido },\n      { text: '❌ Rechazar', callback_data: 'admin_reject_' + calc.id_pedido }\n    ]\n  ]\n};\n\nreturn [{ json: {\n  chat_id: -5174866298,\n  text: text,\n  parse_mode: 'Markdown',\n  reply_markup: keyboard\n}}];"
       },
       "id": "p-kitchen-payload",
       "name": "Kitchen Payload",
