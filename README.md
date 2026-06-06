@@ -604,7 +604,10 @@ MIT License — ver archivo [LICENSE](LICENSE) para detalles.
 
 ## 👤 Autor
 
-Desarrollado con ☕ y 🤖 para mejorar la experiencia de cafeterías institucionales.
+**Andrés Guerra** — Desarrollado con ☕ y 🤖 para mejorar la experiencia de cafeterías institucionales.
+
+- GitHub: [@andresguerra321](https://github.com/andresguerra321)
+- Email: contacto disponible en el perfil de GitHub
 
 ---
 
