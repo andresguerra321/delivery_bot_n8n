@@ -3,7 +3,7 @@
   "nodes": [
     {
       "parameters": {},
-      "id": "c59e9f47-d06b-46fa-8335-74047de40290",
+      "id": "trigger-node",
       "name": "Execute Workflow Trigger",
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1,
@@ -14,36 +14,23 @@
     },
     {
       "parameters": {
-        "operation": "read",
-        "documentId": {
-          "__rl": true,
-          "value": "1ENztX5Jw-W8upEOijCgdVbi2_cHfBbOO0Y4O0s6rpuw",
-          "mode": "id"
-        },
-        "sheetName": {
-          "__rl": true,
-          "value": "MENU",
-          "mode": "name"
-        },
-        "filtersUI": {
-          "values": []
-        },
-        "options": {}
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $('Execute Workflow Trigger').first().json.callback_data }}",
+              "value2": "cart_ver_historial"
+            }
+          ]
+        }
       },
-      "id": "gsheets-menu-read",
-      "name": "Read Menu",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4.5,
+      "id": "if-historial",
+      "name": "Is Historial?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
       "position": [
         -200,
         160
-      ],
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "15AvKlr14Qt1VZsU",
-          "name": "Google Sheets account"
-        }
-      }
+      ]
     },
     {
       "parameters": {
@@ -63,15 +50,14 @@
         },
         "options": {}
       },
-      "id": "gsheets-pedidos-read",
+      "id": "read-pedidos",
       "name": "Read PEDIDOS",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
       "position": [
         0,
-        160
+        0
       ],
-      "alwaysOutputData": true,
       "credentials": {
         "googleSheetsOAuth2Api": {
           "id": "15AvKlr14Qt1VZsU",
@@ -81,14 +67,73 @@
     },
     {
       "parameters": {
-        "jsCode": "const inputData = $('Execute Workflow Trigger').first().json;\nconst cb = inputData.callback_data || '';\nconst menuItems = $('Read Menu').all().map(i => i.json);\n\nif (cb === 'cat_ver_todas' || cb === 'back_menu') {\n  const categories = [...new Set(menuItems.filter(i => parseInt(i.stock) > 0).map(i => i.categoria))].filter(Boolean);\n  const keyboard = categories.map(cat => ([{ text: '📁 ' + cat, callback_data: 'cat_' + cat }]));\n  keyboard.push([{ text: '⬅️ Volver al Inicio', callback_data: 'main_menu' }]);\n  return [{\n    json: {\n      mensaje: '🛒 *Categorías*\\\\n\\\\nSelecciona una categoría:',\n      reply_markup: { inline_keyboard: keyboard },\n      session_updates: { estado_fsm: 'SELECCION_CANTIDAD', carrito_json: inputData.carrito_json || '[]', contexto_json: inputData.contexto_json || '{}' }\n    }\n  }];\n}\n\nif (cb.startsWith('cat_') && cb !== 'cat_ver_todas') {\n  const category = cb.replace('cat_', '');\n  const items = menuItems.filter(i => i.categoria === category && parseInt(i.stock) > 0);\n  const keyboard = items.map(item => ([{ text: '➕ ' + item.nombre + ' ($' + item.precio + ')', callback_data: 'add_' + item.id_producto }]));\n  keyboard.push([{ text: '🛒 Ver Carrito', callback_data: 'view_cart' }]);\n  keyboard.push([{ text: '⬅️ Categorías', callback_data: 'cat_ver_todas' }]);\n  return [{\n    json: {\n      mensaje: '📁 *' + category + '*\\\\n\\\\nSelecciona un producto:',\n      reply_markup: { inline_keyboard: keyboard },\n      session_updates: { estado_fsm: 'SELECCION_CANTIDAD', carrito_json: inputData.carrito_json || '[]', contexto_json: JSON.stringify({ current_category: category }) }\n    }\n  }];\n}\n\nif (cb.startsWith('add_')) {\n  const productId = cb.replace('add_', '');\n  const product = menuItems.find(i => i.id_producto === productId);\n  const stock = product ? parseInt(product.stock) : 5;\n  const maxQty = Math.min(stock, 5);\n\n  const qtyButtons = [];\n  for (let i = 1; i <= maxQty; i++) {\n    qtyButtons.push({ text: '' + i, callback_data: 'qty_' + productId + '_' + i });\n  }\n\n  return [{\n    json: {\n      mensaje: '🔢 *' + (product ? product.nombre : 'Producto') + '*\\\\nPrecio: $' + (product ? product.precio : '0') + '\\\\n\\\\n¿Cuántas unidades deseas?',\n      reply_markup: { inline_keyboard: [\n        qtyButtons,\n        [{ text: '⬅️ Volver', callback_data: inputData.contexto_json ? (function() { try { const c = JSON.parse(inputData.contexto_json); return c.current_category ? 'cat_' + c.current_category : 'cat_ver_todas'; } catch(e) { return 'cat_ver_todas'; } })() : 'cat_ver_todas' }]\n      ]},\n      session_updates: { estado_fsm: 'SELECCION_CANTIDAD', carrito_json: inputData.carrito_json || '[]', contexto_json: inputData.contexto_json || '{}' }\n    }\n  }];\n}\n\nif (cb.startsWith('qty_')) {\n  const parts = cb.replace('qty_', '').split('_');\n  const productId = parts.slice(0, -1).join('_');\n  const qty = parseInt(parts[parts.length - 1]) || 1;\n  const product = menuItems.find(i => i.id_producto === productId);\n\n  let cart = [];\n  try { cart = JSON.parse(inputData.carrito_json || '[]'); } catch(e) {}\n\n  if (product) {\n    const existing = cart.find(i => i.id === productId);\n    if (existing) { existing.qty += qty; }\n    else { cart.push({ id: productId, nombre: product.nombre, precio: parseFloat(product.precio), qty: qty }); }\n  }\n\n  let ctx = {};\n  try { ctx = JSON.parse(inputData.contexto_json || '{}'); } catch(e) {}\n\n  return [{\n    json: {\n      mensaje: '✅ ' + qty + 'x ' + (product ? product.nombre : 'Producto') + ' agregado al carrito.',\n      reply_markup: { inline_keyboard: [\n        [{ text: '⬅️ Seguir comprando', callback_data: ctx.current_category ? 'cat_' + ctx.current_category : 'cat_ver_todas' }],\n        [{ text: '🛒 Ver Carrito', callback_data: 'view_cart' }]\n      ]},\n      session_updates: { estado_fsm: 'SELECCION_CANTIDAD', carrito_json: JSON.stringify(cart), contexto_json: inputData.contexto_json || '{}' }\n    }\n  }];\n}\n\nif (cb === 'confirm_track') {\n  return [{\n    json: {\n      mensaje: '📍 *Seguimiento*\\\\n\\\\nPor favor, ingresa tu número de orden (ej: ORD-1234):',\n      reply_markup: { inline_keyboard: [[{ text: '⬅️ Volver', callback_data: 'main_menu' }]] },\n      session_updates: { estado_fsm: 'TRACK_ORDER', carrito_json: inputData.carrito_json || '[]', contexto_json: '{}' }\n    }\n  }];\n}\n\nif (cb === 'cart_ver_historial') {\n  const allPedidos = $('Read PEDIDOS').all().map(i => i.json);\n  const misPedidos = allPedidos.filter(p => String(p.telegram_id) === String(inputData.telegram_id));\n  if (misPedidos.length === 0) {\n    return [{\n      json: {\n        mensaje: '📋 *Mis Pedidos*\\\\n\\\\nNo tienes pedidos recientes.',\n        reply_markup: { inline_keyboard: [[{ text: '⬅️ Volver', callback_data: 'main_menu' }]] },\n        session_updates: { estado_fsm: 'MENU_PRINCIPAL', carrito_json: inputData.carrito_json || '[]', contexto_json: '{}' }\n      }\n    }];\n  }\n  const recientes = misPedidos.slice(-5).reverse();\n  let texto = '📋 *Mis Pedidos*\\\\n\\\\n';\n  recientes.forEach(function(p, idx) {\n    const emoji = p.estado === 'ENTREGADO' ? '✅' : p.estado === 'PREPARACION' ? '🔥' : p.estado === 'EN_CAMINO' ? '🚴' : p.estado === 'RECIBIDO' ? '📦' : p.estado === 'CANCELADO' ? '❌' : '📦';\n    texto += (idx+1) + '. ' + emoji + ' #' + p.id_pedido + '\\\\n   Estado: ' + p.estado + ' | Total: $' + p.total_pago + '\\\\n   Fecha: ' + p.fecha + '\\\\n\\\\n';\n  });\n  return [{\n    json: {\n      mensaje: texto,\n      reply_markup: { inline_keyboard: [[{ text: '⬅️ Volver', callback_data: 'main_menu' }]] },\n      session_updates: { estado_fsm: 'MENU_PRINCIPAL', carrito_json: inputData.carrito_json || '[]', contexto_json: '{}' }\n    }\n  }];\n}\n\nreturn [{\n  json: {\n    mensaje: '¡Bienvenido a DeliveryBot! 🍔\\\\n\\\\nPor favor, selecciona una opción:',\n    reply_markup: { inline_keyboard: [\n      [{ text: '🛒 Hacer Pedido', callback_data: 'cat_ver_todas' }],\n      [{ text: '📋 Mis Pedidos', callback_data: 'cart_ver_historial' }, { text: '📍 Seguir Pedido', callback_data: 'confirm_track' }]\n    ]},\n    session_updates: { estado_fsm: 'MENU_PRINCIPAL', carrito_json: '[]', contexto_json: '{}' }\n  }\n}];"
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "1ENztX5Jw-W8upEOijCgdVbi2_cHfBbOO0Y4O0s6rpuw",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "MENU",
+          "mode": "name"
+        },
+        "filtersUI": {
+          "values": []
+        },
+        "options": {}
       },
-      "id": "bf8415f4-673b-41d6-8a82-80d3da63d0d4",
-      "name": "Format Main Menu",
+      "id": "read-menu",
+      "name": "Read Menu",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        0,
+        320
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "15AvKlr14Qt1VZsU",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: {} }];"
+      },
+      "id": "limit-pedidos",
+      "name": "Limit PEDIDOS",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
         200,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: {} }];"
+      },
+      "id": "limit-menu",
+      "name": "Limit Menu",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        200,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputData = $('Execute Workflow Trigger').first().json;\nconst cb = inputData.callback_data || '';\n\nif (cb === 'cart_ver_historial') {\n  let allPedidos = [];\n  try { allPedidos = $('Read PEDIDOS').all().map(i => i.json); } catch(e) {}\n  const misPedidos = allPedidos.filter(p => String(p.telegram_id) === String(inputData.telegram_id));\n  if (misPedidos.length === 0) {\n    return [{\n      json: {\n        mensaje: '📋 *Mis Pedidos*\\\\n\\\\nNo tienes pedidos recientes.',\n        reply_markup: { inline_keyboard: [[{ text: '⬅️ Volver', callback_data: 'main_menu' }]] },\n        session_updates: { estado_fsm: 'MENU_PRINCIPAL', carrito_json: inputData.carrito_json || '[]', contexto_json: '{}' }\n      }\n    }];\n  }\n  const recientes = misPedidos.slice(-5).reverse();\n  let texto = '📋 *Mis Pedidos*\\\\n\\\\n';\n  recientes.forEach(function(p, idx) {\n    const emoji = p.estado === 'ENTREGADO' ? '✅' : p.estado === 'PREPARACION' ? '🔥' : p.estado === 'EN_CAMINO' ? '🚴' : p.estado === 'RECIBIDO' ? '📦' : p.estado === 'CANCELADO' ? '❌' : '📦';\n    texto += (idx+1) + '. ' + emoji + ' #' + p.id_pedido + '\\\\n   Estado: ' + p.estado + ' | Total: $' + p.total_pago + '\\\\n   Fecha: ' + p.fecha + '\\\\n\\\\n';\n  });\n  return [{\n    json: {\n      mensaje: texto,\n      reply_markup: { inline_keyboard: [[{ text: '⬅️ Volver', callback_data: 'main_menu' }]] },\n      session_updates: { estado_fsm: 'MENU_PRINCIPAL', carrito_json: inputData.carrito_json || '[]', contexto_json: '{}' }\n    }\n  }];\n}\n\nlet menuItems = [];\ntry { menuItems = $('Read Menu').all().map(i => i.json); } catch(e) {}\n\nif (cb === 'cat_ver_todas' || cb === 'back_menu') {\n  const categories = [...new Set(menuItems.filter(i => parseInt(i.stock) > 0).map(i => i.categoria))].filter(Boolean);\n  const keyboard = categories.map(cat => ([{ text: '📁 ' + cat, callback_data: 'cat_' + cat }]));\n  keyboard.push([{ text: '⬅️ Volver al Inicio', callback_data: 'main_menu' }]);\n  return [{\n    json: {\n      mensaje: '🛒 *Categorías*\\\\n\\\\nSelecciona una categoría:',\n      reply_markup: { inline_keyboard: keyboard },\n      session_updates: { estado_fsm: 'SELECCION_CANTIDAD', carrito_json: inputData.carrito_json || '[]', contexto_json: inputData.contexto_json || '{}' }\n    }\n  }];\n}\n\nif (cb.startsWith('cat_') && cb !== 'cat_ver_todas') {\n  const category = cb.replace('cat_', '');\n  const items = menuItems.filter(i => i.categoria === category && parseInt(i.stock) > 0);\n  const keyboard = items.map(item => ([{ text: '➕ ' + item.nombre + ' ($' + item.precio + ')', callback_data: 'add_' + item.id_producto }]));\n  keyboard.push([{ text: '🛒 Ver Carrito', callback_data: 'view_cart' }]);\n  keyboard.push([{ text: '⬅️ Categorías', callback_data: 'cat_ver_todas' }]);\n  return [{\n    json: {\n      mensaje: '📁 *' + category + '*\\\\n\\\\nSelecciona un producto:',\n      reply_markup: { inline_keyboard: keyboard },\n      session_updates: { estado_fsm: 'SELECCION_CANTIDAD', carrito_json: inputData.carrito_json || '[]', contexto_json: JSON.stringify({ current_category: category }) }\n    }\n  }];\n}\n\nif (cb.startsWith('add_')) {\n  const productId = cb.replace('add_', '');\n  const product = menuItems.find(i => i.id_producto === productId);\n  const stock = product ? parseInt(product.stock) : 5;\n  const maxQty = Math.min(stock, 5);\n\n  const qtyButtons = [];\n  for (let i = 1; i <= maxQty; i++) {\n    qtyButtons.push({ text: '' + i, callback_data: 'qty_' + productId + '_' + i });\n  }\n\n  return [{\n    json: {\n      mensaje: '🔢 *' + (product ? product.nombre : 'Producto') + '*\\\\nPrecio: $' + (product ? product.precio : '0') + '\\\\n\\\\n¿Cuántas unidades deseas?',\n      reply_markup: { inline_keyboard: [\n        qtyButtons,\n        [{ text: '⬅️ Volver', callback_data: inputData.contexto_json ? (function() { try { const c = JSON.parse(inputData.contexto_json); return c.current_category ? 'cat_' + c.current_category : 'cat_ver_todas'; } catch(e) { return 'cat_ver_todas'; } })() : 'cat_ver_todas' }]\n      ]},\n      session_updates: { estado_fsm: 'SELECCION_CANTIDAD', carrito_json: inputData.carrito_json || '[]', contexto_json: inputData.contexto_json || '{}' }\n    }\n  }];\n}\n\nif (cb.startsWith('qty_')) {\n  const parts = cb.replace('qty_', '').split('_');\n  const productId = parts.slice(0, -1).join('_');\n  const qty = parseInt(parts[parts.length - 1]) || 1;\n  const product = menuItems.find(i => i.id_producto === productId);\n\n  let cart = [];\n  try { cart = JSON.parse(inputData.carrito_json || '[]'); } catch(e) {}\n\n  if (product) {\n    const existing = cart.find(i => i.id === productId);\n    if (existing) { existing.qty += qty; }\n    else { cart.push({ id: productId, nombre: product.nombre, precio: parseFloat(product.precio), qty: qty }); }\n  }\n\n  let ctx = {};\n  try { ctx = JSON.parse(inputData.contexto_json || '{}'); } catch(e) {}\n\n  return [{\n    json: {\n      mensaje: '✅ ' + qty + 'x ' + (product ? product.nombre : 'Producto') + ' agregado al carrito.',\n      reply_markup: { inline_keyboard: [\n        [{ text: '⬅️ Seguir comprando', callback_data: ctx.current_category ? 'cat_' + ctx.current_category : 'cat_ver_todas' }],\n        [{ text: '🛒 Ver Carrito', callback_data: 'view_cart' }]\n      ]},\n      session_updates: { estado_fsm: 'SELECCION_CANTIDAD', carrito_json: JSON.stringify(cart), contexto_json: inputData.contexto_json || '{}' }\n    }\n  }];\n}\n\nif (cb === 'confirm_track') {\n  return [{\n    json: {\n      mensaje: '📍 *Seguimiento*\\\\n\\\\nPor favor, ingresa tu número de orden (ej: ORD-1234):',\n      reply_markup: { inline_keyboard: [[{ text: '⬅️ Volver', callback_data: 'main_menu' }]] },\n      session_updates: { estado_fsm: 'TRACK_ORDER', carrito_json: inputData.carrito_json || '[]', contexto_json: '{}' }\n    }\n  }];\n}\n\nreturn [{\n  json: {\n    mensaje: '¡Bienvenido a DeliveryBot! 🍔\\\\n\\\\nPor favor, selecciona una opción:',\n    reply_markup: { inline_keyboard: [\n      [{ text: '🛒 Hacer Pedido', callback_data: 'cat_ver_todas' }],\n      [{ text: '📋 Mis Pedidos', callback_data: 'cart_ver_historial' }, { text: '📍 Seguir Pedido', callback_data: 'confirm_track' }]\n    ]},\n    session_updates: { estado_fsm: 'MENU_PRINCIPAL', carrito_json: '[]', contexto_json: '{}' }\n  }\n}];"
+      },
+      "id": "format-main-menu",
+      "name": "Format Main Menu",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        400,
         160
       ]
     }
@@ -98,7 +143,36 @@
       "main": [
         [
           {
+            "node": "Is Historial?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Historial?": {
+      "main": [
+        [
+          {
+            "node": "Read PEDIDOS",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
             "node": "Read Menu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read PEDIDOS": {
+      "main": [
+        [
+          {
+            "node": "Limit PEDIDOS",
             "type": "main",
             "index": 0
           }
@@ -109,14 +183,25 @@
       "main": [
         [
           {
-            "node": "Read PEDIDOS",
+            "node": "Limit Menu",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Read PEDIDOS": {
+    "Limit PEDIDOS": {
+      "main": [
+        [
+          {
+            "node": "Format Main Menu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit Menu": {
       "main": [
         [
           {
@@ -132,6 +217,5 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "id": "eLdfA8OQMiTKeEs3",
-  "tags": []
+  "id": "eLdfA8OQMiTKeEs3"
 }

@@ -2,26 +2,15 @@
   "name": "WF_ADMIN_PANEL",
   "nodes": [
     {
-      "parameters": {
-        "updates": [
-          "callback_query"
-        ],
-        "additionalFields": {}
-      },
-      "id": "a1000000-0000-0000-0000-000000000001",
-      "name": "Telegram Trigger",
-      "type": "n8n-nodes-base.telegramTrigger",
-      "typeVersion": 1.1,
+      "parameters": {},
+      "id": "admin-trigger",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
       "position": [
-        220,
-        300
-      ],
-      "credentials": {
-        "telegramApi": {
-          "id": "ZK5tkFfqOriXG3BO",
-          "name": "Telegram account"
-        }
-      }
+        -400,
+        400
+      ]
     },
     {
       "parameters": {
@@ -1033,7 +1022,7 @@
     }
   ],
   "connections": {
-    "Telegram Trigger": {
+    "Execute Workflow Trigger": {
       "main": [
         [
           {

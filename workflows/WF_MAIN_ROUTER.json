@@ -123,6 +123,11 @@
               "operation": "equal",
               "value2": "CONFIRM_ORDER",
               "output": 3
+            },
+            {
+              "operation": "equal",
+              "value2": "ADMIN_ROUTE",
+              "output": 4
             }
           ]
         },
@@ -250,6 +255,42 @@
       ],
       "id": "8aaaebc3-8fce-4d29-a005-75a50bb24b3c",
       "name": "Call 'WF_FLOW_PEDIDO'"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "",
+          "mode": "id"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "telegram_id": "={{ $('Extract Data').first().json.telegram_id }}",
+            "chat_id": "={{ $('Extract Data').first().json.chat_id }}",
+            "text": "={{ $('Extract Data').first().json.text }}",
+            "callback_data": "={{ $('Extract Data').first().json.callback_data }}",
+            "estado_fsm": "={{ $json.estado_fsm }}",
+            "carrito_json": "={{ $json.carrito_json }}",
+            "contexto_json": "={{ $json.contexto_json }}",
+            "first_name": "={{ $('Extract Data').first().json.first_name }}",
+            "username": "={{ $('Extract Data').first().json.username }}"
+          },
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        1100,
+        1200
+      ],
+      "id": "call-admin-panel-node",
+      "name": "Call 'WF_ADMIN_PANEL'"
     },
     {
       "parameters": {
@@ -503,7 +544,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const extractData = $('Extract Data').first().json;\nconst sessionData = $input.first().json;\nconst cb = extractData.callback_data || '';\nconst text = extractData.text || '';\n\n// Ignorar callbacks del admin panel - los maneja WF_ADMIN_PANEL\nif (cb.startsWith('admin_')) {\n  return [];\n}\n\nlet estado = sessionData.estado_fsm || 'MENU_PRINCIPAL';\n\nif (cb !== '') {\n  if (cb.startsWith('cat_') || cb.startsWith('add_') || cb.startsWith('qty_') || cb === 'main_menu' || cb === 'back_menu' || cb === 'cat_ver_todas' || cb === 'cart_ver_historial' || cb === 'confirm_track') {\n    estado = 'MENU_PRINCIPAL';\n  } else if (cb === 'view_cart' || cb === 'confirm_yes') {\n    estado = 'CARRITO';\n  } else if (cb === 'final_confirm') {\n    estado = 'CONFIRM_ORDER';\n  }\n}\n\nif (text === '/start') {\n  estado = 'MENU_PRINCIPAL';\n}\n\nreturn [{ json: { ...sessionData, estado_fsm: estado } }];\n"
+        "jsCode": "const extractData = $('Extract Data').first().json;\nconst sessionData = $input.first().json;\nconst cb = extractData.callback_data || '';\nconst text = extractData.text || '';\n\nlet estado = sessionData.estado_fsm || 'MENU_PRINCIPAL';\n\nif (cb !== '') {\n  if (cb.startsWith('admin_')) {\n    return [{ json: { ...sessionData, estado_fsm: 'ADMIN_ROUTE' } }];\n  } else if (cb.startsWith('cat_') || cb.startsWith('add_') || cb.startsWith('qty_') || cb === 'main_menu' || cb === 'back_menu' || cb === 'cat_ver_todas' || cb === 'cart_ver_historial' || cb === 'confirm_track') {\n    estado = 'MENU_PRINCIPAL';\n  } else if (cb === 'view_cart' || cb === 'confirm_yes') {\n    estado = 'CARRITO';\n  } else if (cb === 'final_confirm') {\n    estado = 'CONFIRM_ORDER';\n  }\n}\n\nif (text === '/start') {\n  estado = 'MENU_PRINCIPAL';\n}\n\nreturn [{ json: { ...sessionData, estado_fsm: estado } }];\n"
       },
       "id": "smart-router-node",
       "name": "Smart Router",
@@ -599,6 +640,13 @@
         [
           {
             "node": "Call 'WF_FLOW_PEDIDO'",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Call 'WF_ADMIN_PANEL'",
             "type": "main",
             "index": 0
           }
