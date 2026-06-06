@@ -3,11 +3,14 @@
   "nodes": [
     {
       "parameters": {},
-      "id": "1",
+      "id": "trigger",
       "name": "Execute Workflow Trigger",
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1,
-      "position": [250, 300]
+      "position": [
+        250,
+        300
+      ]
     },
     {
       "parameters": {
@@ -24,21 +27,107 @@
         },
         "fallbackOutput": 1
       },
-      "id": "2",
+      "id": "router",
       "name": "Estado Router",
       "type": "n8n-nodes-base.switch",
       "typeVersion": 1,
-      "position": [450, 300]
+      "position": [
+        450,
+        300
+      ]
     },
     {
       "parameters": {
-        "jsCode": "return [{\n  json: {\n    nuevo_estado: 'MENU_PRINCIPAL',\n    mensaje: '📍 *Estado de tu pedido*\\n\\n📦 Orden: #ORD-20260604-0042\\n\\nEstado: 🔥 En Preparación',\n    reply_markup: {\n      inline_keyboard: [\n        [{ text: '⬅️ Menú Principal', callback_data: 'action_back_main' }]\n      ]\n    },\n    session_updates: {\n      estado_fsm: 'MENU_PRINCIPAL',\n      carrito_json: '[]',\n      contexto_json: '{}'\n    }\n  }\n}];"
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "1ENztX5Jw-W8upEOijCgdVbi2_cHfBbOO0Y4O0s6rpuw",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "PEDIDOS",
+          "mode": "name"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "id_pedido",
+              "lookupValue": "={{ $('Execute Workflow Trigger').first().json.text ? $('Execute Workflow Trigger').first().json.text.trim() : '' }}"
+            }
+          ]
+        },
+        "options": {
+          "alwaysOutputItem": true
+        }
       },
-      "id": "3",
-      "name": "Format Estado",
+      "id": "read-order",
+      "name": "Read Order",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        650,
+        150
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "15AvKlr14Qt1VZsU",
+          "name": "Google Sheets account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.id_pedido || '' }}",
+              "operation": "notEqual",
+              "value2": ""
+            },
+            {
+              "value1": "={{ $json.telegram_id || '' }}",
+              "value2": "={{ $('Execute Workflow Trigger').first().json.telegram_id }}"
+            }
+          ]
+        },
+        "combineOperation": "all"
+      },
+      "id": "check-exists",
+      "name": "Check Order Exists",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        850,
+        150
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const order = $input.first().json;\nconst emojis = {\n  'RECIBIDO': '📦',\n  'PREPARACION': '🔥',\n  'EN_CAMINO': '🚚',\n  'LISTO': '✅',\n  'ENTREGADO': '🎉',\n  'CANCELADO': '❌'\n};\nconst emoji = emojis[order.estado] || '📦';\nreturn [{\n  json: {\n    nuevo_estado: 'MENU_PRINCIPAL',\n    mensaje: `📍 *Estado de tu pedido*\\n\\n📦 Orden: #${order.id_pedido}\\n\\nEstado: ${emoji} ${order.estado}`,\n    reply_markup: {\n      inline_keyboard: [\n        [{ text: '⬅️ Menú Principal', callback_data: 'action_back_main' }]\n      ]\n    },\n    session_updates: {\n      estado_fsm: 'MENU_PRINCIPAL',\n      carrito_json: '[]',\n      contexto_json: '{}'\n    }\n  }\n}];"
+      },
+      "id": "format-found",
+      "name": "Format Found",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [650, 150]
+      "position": [
+        1050,
+        50
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst inputId = $('Execute Workflow Trigger').first().json.text || 'desconocida';\nreturn [{\n  json: {\n    nuevo_estado: 'MENU_PRINCIPAL',\n    mensaje: `❌ Lo sentimos, no encontramos ninguna orden tuya con el código \"${inputId}\".\\n\\nAsegúrate de haber escrito el código correctamente (ejemplo: ORD-20260604-0001) y que la orden te pertenezca.`,\n    reply_markup: {\n      inline_keyboard: [\n        [{ text: '⬅️ Menú Principal', callback_data: 'action_back_main' }]\n      ]\n    },\n    session_updates: {\n      estado_fsm: 'MENU_PRINCIPAL',\n      carrito_json: '[]',\n      contexto_json: '{}'\n    }\n  }\n}];\n"
+      },
+      "id": "format-not-found",
+      "name": "Format Not Found",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1050,
+        250
+      ]
     }
   ],
   "connections": {
@@ -57,7 +146,36 @@
       "main": [
         [
           {
-            "node": "Format Estado",
+            "node": "Read Order",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Order": {
+      "main": [
+        [
+          {
+            "node": "Check Order Exists",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Order Exists": {
+      "main": [
+        [
+          {
+            "node": "Format Found",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Format Not Found",
             "type": "main",
             "index": 0
           }
