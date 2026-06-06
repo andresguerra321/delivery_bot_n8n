@@ -19,8 +19,17 @@
             {
               "value1": "={{ $('Execute Workflow Trigger').first().json.callback_data }}",
               "value2": "cart_ver_historial"
+            },
+            {
+              "value1": "={{ $('Execute Workflow Trigger').first().json.text }}",
+              "value2": "/estado"
+            },
+            {
+              "value1": "={{ $('Execute Workflow Trigger').first().json.text }}",
+              "value2": "/cancelar"
             }
-          ]
+          ],
+          "combineOperation": "any"
         }
       },
       "id": "if-historial",
@@ -126,7 +135,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const inputData = $('Execute Workflow Trigger').first().json;\nconst cb = inputData.callback_data || '';\n\nconst text = inputData.text || '';\nif (cb === 'cart_ver_historial' || text === '/estado') {\n  let allPedidos = [];\n  try { allPedidos = $('Read PEDIDOS').all().map(i => i.json); } catch(e) {}\n  const misPedidos = allPedidos.filter(p => String(p.telegram_id) === String(inputData.telegram_id));\n  if (misPedidos.length === 0) {\n    return [{\n      json: {\n        mensaje: '📋 *Mis Pedidos*\\n\\nNo tienes pedidos recientes.',\n        reply_markup: { inline_keyboard: [[{ text: '⬅️ Volver', callback_data: 'main_menu' }]] },\n        session_updates: { estado_fsm: 'MENU_PRINCIPAL', carrito_json: inputData.carrito_json || '[]', contexto_json: '{}' }\n      }\n    }];\n  }\n  const recientes = misPedidos.slice(-5).reverse();\n  let texto = '📋 *Mis Pedidos*\\n\\n';\n  recientes.forEach(function(p, idx) {\n    const emoji = p.estado === 'ENTREGADO' ? '✅' : p.estado === 'PREPARACION' ? '🔥' : p.estado === 'EN_CAMINO' ? '🚴' : p.estado === 'RECIBIDO' ? '📦' : p.estado === 'CANCELADO' ? '❌' : '📦';\n    texto += (idx+1) + '. ' + emoji + ' #' + p.id_pedido + '\\n   Estado: ' + p.estado + ' | Total: $' + p.total_pago + '\\n   Fecha: ' + p.fecha + '\\n\\n';\n  });\n  return [{\n    json: {\n      mensaje: texto,\n      reply_markup: { inline_keyboard: [[{ text: '⬅️ Volver', callback_data: 'main_menu' }]] },\n      session_updates: { estado_fsm: 'MENU_PRINCIPAL', carrito_json: inputData.carrito_json || '[]', contexto_json: '{}' }\n    }\n  }];\n}\n\nlet menuItems = [];\ntry { menuItems = $('Read Menu').all().map(i => i.json); } catch(e) {}\n\nif (cb === 'cat_ver_todas' || cb === 'back_menu') {\n  const categories = [...new Set(menuItems.filter(i => parseInt(i.stock) > 0).map(i => i.categoria))].filter(Boolean);\n  const keyboard = categories.map(cat => ([{ text: '📁 ' + cat, callback_data: 'cat_' + cat }]));\n  keyboard.push([{ text: '⬅️ Volver al Inicio', callback_data: 'main_menu' }]);\n  return [{\n    json: {\n      mensaje: '🛒 *Categorías*\\n\\nSelecciona una categoría:',\n      reply_markup: { inline_keyboard: keyboard },\n      session_updates: { estado_fsm: 'SELECCION_CANTIDAD', carrito_json: inputData.carrito_json || '[]', contexto_json: inputData.contexto_json || '{}' }\n    }\n  }];\n}\n\nif (cb.startsWith('cat_') && cb !== 'cat_ver_todas') {\n  const category = cb.replace('cat_', '');\n  const items = menuItems.filter(i => i.categoria === category && parseInt(i.stock) > 0);\n  const keyboard = items.map(item => ([{ text: '➕ ' + item.nombre + ' ($' + item.precio + ')', callback_data: 'add_' + item.id_producto }]));\n  keyboard.push([{ text: '🛒 Ver Carrito', callback_data: 'view_cart' }]);\n  keyboard.push([{ text: '⬅️ Categorías', callback_data: 'cat_ver_todas' }]);\n  return [{\n    json: {\n      mensaje: '📁 *' + category + '*\\n\\nSelecciona un producto:',\n      reply_markup: { inline_keyboard: keyboard },\n      session_updates: { estado_fsm: 'SELECCION_CANTIDAD', carrito_json: inputData.carrito_json || '[]', contexto_json: JSON.stringify({ current_category: category }) }\n    }\n  }];\n}\n\nif (cb.startsWith('add_')) {\n  const productId = cb.replace('add_', '');\n  const product = menuItems.find(i => i.id_producto === productId);\n  const stock = product ? parseInt(product.stock) : 5;\n  const maxQty = Math.min(stock, 5);\n\n  const qtyButtons = [];\n  for (let i = 1; i <= maxQty; i++) {\n    qtyButtons.push({ text: '' + i, callback_data: 'qty_' + productId + '_' + i });\n  }\n\n  return [{\n    json: {\n      mensaje: '🔢 *' + (product ? product.nombre : 'Producto') + '*\\nPrecio: $' + (product ? product.precio : '0') + '\\n\\n¿Cuántas unidades deseas?',\n      reply_markup: { inline_keyboard: [\n        qtyButtons,\n        [{ text: '⬅️ Volver', callback_data: inputData.contexto_json ? (function() { try { const c = JSON.parse(inputData.contexto_json); return c.current_category ? 'cat_' + c.current_category : 'cat_ver_todas'; } catch(e) { return 'cat_ver_todas'; } })() : 'cat_ver_todas' }]\n      ]},\n      session_updates: { estado_fsm: 'SELECCION_CANTIDAD', carrito_json: inputData.carrito_json || '[]', contexto_json: inputData.contexto_json || '{}' }\n    }\n  }];\n}\n\nif (cb.startsWith('qty_')) {\n  const parts = cb.replace('qty_', '').split('_');\n  const productId = parts.slice(0, -1).join('_');\n  const qty = parseInt(parts[parts.length - 1]) || 1;\n  const product = menuItems.find(i => i.id_producto === productId);\n\n  let cart = [];\n  try { cart = JSON.parse(inputData.carrito_json || '[]'); } catch(e) {}\n\n  if (product) {\n    const existing = cart.find(i => i.id === productId);\n    if (existing) { existing.qty += qty; }\n    else { cart.push({ id: productId, nombre: product.nombre, precio: parseFloat(product.precio), qty: qty }); }\n  }\n\n  let ctx = {};\n  try { ctx = JSON.parse(inputData.contexto_json || '{}'); } catch(e) {}\n\n  return [{\n    json: {\n      mensaje: '✅ ' + qty + 'x ' + (product ? product.nombre : 'Producto') + ' agregado al carrito.',\n      reply_markup: { inline_keyboard: [\n        [{ text: '⬅️ Seguir comprando', callback_data: ctx.current_category ? 'cat_' + ctx.current_category : 'cat_ver_todas' }],\n        [{ text: '🛒 Ver Carrito', callback_data: 'view_cart' }]\n      ]},\n      session_updates: { estado_fsm: 'SELECCION_CANTIDAD', carrito_json: JSON.stringify(cart), contexto_json: inputData.contexto_json || '{}' }\n    }\n  }];\n}\n\nif (text === '/ayuda') {\n  return [{\n    json: {\n      mensaje: '🤖 *Ayuda DeliveryBot*\\n\\nUsa los botones del menú para hacer tus pedidos. También puedes usar estos comandos:\\n\\n/start - Reiniciar el bot\\n/estado - Ver tus pedidos recientes\\n/cancelar - Vaciar tu carrito\\n/ayuda - Mostrar este mensaje',\n      reply_markup: { inline_keyboard: [[{ text: '⬅️ Menú Principal', callback_data: 'main_menu' }]] },\n      session_updates: { estado_fsm: 'MENU_PRINCIPAL', carrito_json: inputData.carrito_json || '[]', contexto_json: '{}' }\n    }\n  }];\n}\n\nif (cb === 'confirm_track') {\n  return [{\n    json: {\n      mensaje: '📍 *Seguimiento*\\n\\nPor favor, ingresa tu número de orden (ej: ORD-1234):',\n      reply_markup: { inline_keyboard: [[{ text: '⬅️ Volver', callback_data: 'main_menu' }]] },\n      session_updates: { estado_fsm: 'TRACK_ORDER', carrito_json: inputData.carrito_json || '[]', contexto_json: '{}' }\n    }\n  }];\n}\n\nlet baseMsg = '¡Bienvenido a DeliveryBot! 🍔\\n\\nPor favor, selecciona una opción:';\nif (text === '/cancelar') {\n  baseMsg = '✅ *Operación cancelada exitosamente y carrito vaciado.*\\n\\n' + baseMsg;\n}\n\nreturn [{\n  json: {\n    mensaje: baseMsg,\n    reply_markup: { inline_keyboard: [\n      [{ text: '🛒 Hacer Pedido', callback_data: 'cat_ver_todas' }],\n      [{ text: '📋 Mis Pedidos', callback_data: 'cart_ver_historial' }, { text: '📍 Seguir Pedido', callback_data: 'confirm_track' }]\n    ]},\n    session_updates: { estado_fsm: 'MENU_PRINCIPAL', carrito_json: '[]', contexto_json: '{}' }\n  }\n}];"
+        "jsCode": "const inputData = $('Execute Workflow Trigger').first().json;\nconst cb = inputData.callback_data || '';\n\nconst text = inputData.text || '';\nif (cb === 'cart_ver_historial' || text === '/estado') {\n  let allPedidos = [];\n  try { allPedidos = $('Read PEDIDOS').all().map(i => i.json); } catch(e) {}\n  const misPedidos = allPedidos.filter(p => String(p.telegram_id) === String(inputData.telegram_id));\n  if (misPedidos.length === 0) {\n    return [{\n      json: {\n        mensaje: '\ud83d\udccb *Mis Pedidos*\\n\\nNo tienes pedidos recientes.',\n        reply_markup: { inline_keyboard: [[{ text: '\u2b05\ufe0f Volver', callback_data: 'main_menu' }]] },\n        session_updates: { estado_fsm: 'MENU_PRINCIPAL', carrito_json: inputData.carrito_json || '[]', contexto_json: '{}' }\n      }\n    }];\n  }\n  const recientes = misPedidos.slice(-5).reverse();\n  let texto = '\ud83d\udccb *Mis Pedidos*\\n\\n';\n  recientes.forEach(function(p, idx) {\n    const emoji = p.estado === 'ENTREGADO' ? '\u2705' : p.estado === 'PREPARACION' ? '\ud83d\udd25' : p.estado === 'EN_CAMINO' ? '\ud83d\udeb4' : p.estado === 'RECIBIDO' ? '\ud83d\udce6' : p.estado === 'CANCELADO' ? '\u274c' : '\ud83d\udce6';\n    texto += (idx+1) + '. ' + emoji + ' #' + p.id_pedido + '\\n   Estado: ' + p.estado + ' | Total: $' + p.total_pago + '\\n   Fecha: ' + p.fecha + '\\n\\n';\n  });\n  return [{\n    json: {\n      mensaje: texto,\n      reply_markup: { inline_keyboard: [[{ text: '\u2b05\ufe0f Volver', callback_data: 'main_menu' }]] },\n      session_updates: { estado_fsm: 'MENU_PRINCIPAL', carrito_json: inputData.carrito_json || '[]', contexto_json: '{}' }\n    }\n  }];\n}\n\nlet menuItems = [];\ntry { menuItems = $('Read Menu').all().map(i => i.json); } catch(e) {}\n\nif (cb === 'cat_ver_todas' || cb === 'back_menu') {\n  const categories = [...new Set(menuItems.filter(i => parseInt(i.stock) > 0).map(i => i.categoria))].filter(Boolean);\n  const keyboard = categories.map(cat => ([{ text: '\ud83d\udcc1 ' + cat, callback_data: 'cat_' + cat }]));\n  keyboard.push([{ text: '\u2b05\ufe0f Volver al Inicio', callback_data: 'main_menu' }]);\n  return [{\n    json: {\n      mensaje: '\ud83d\uded2 *Categor\u00edas*\\n\\nSelecciona una categor\u00eda:',\n      reply_markup: { inline_keyboard: keyboard },\n      session_updates: { estado_fsm: 'SELECCION_CANTIDAD', carrito_json: inputData.carrito_json || '[]', contexto_json: inputData.contexto_json || '{}' }\n    }\n  }];\n}\n\nif (cb.startsWith('cat_') && cb !== 'cat_ver_todas') {\n  const category = cb.replace('cat_', '');\n  const items = menuItems.filter(i => i.categoria === category && parseInt(i.stock) > 0);\n  const keyboard = items.map(item => ([{ text: '\u2795 ' + item.nombre + ' ($' + item.precio + ')', callback_data: 'add_' + item.id_producto }]));\n  keyboard.push([{ text: '\ud83d\uded2 Ver Carrito', callback_data: 'view_cart' }]);\n  keyboard.push([{ text: '\u2b05\ufe0f Categor\u00edas', callback_data: 'cat_ver_todas' }]);\n  return [{\n    json: {\n      mensaje: '\ud83d\udcc1 *' + category + '*\\n\\nSelecciona un producto:',\n      reply_markup: { inline_keyboard: keyboard },\n      session_updates: { estado_fsm: 'SELECCION_CANTIDAD', carrito_json: inputData.carrito_json || '[]', contexto_json: JSON.stringify({ current_category: category }) }\n    }\n  }];\n}\n\nif (cb.startsWith('add_')) {\n  const productId = cb.replace('add_', '');\n  const product = menuItems.find(i => i.id_producto === productId);\n  const stock = product ? parseInt(product.stock) : 5;\n  const maxQty = Math.min(stock, 5);\n\n  const qtyButtons = [];\n  for (let i = 1; i <= maxQty; i++) {\n    qtyButtons.push({ text: '' + i, callback_data: 'qty_' + productId + '_' + i });\n  }\n\n  return [{\n    json: {\n      mensaje: '\ud83d\udd22 *' + (product ? product.nombre : 'Producto') + '*\\nPrecio: $' + (product ? product.precio : '0') + '\\n\\n\u00bfCu\u00e1ntas unidades deseas?',\n      reply_markup: { inline_keyboard: [\n        qtyButtons,\n        [{ text: '\u2b05\ufe0f Volver', callback_data: inputData.contexto_json ? (function() { try { const c = JSON.parse(inputData.contexto_json); return c.current_category ? 'cat_' + c.current_category : 'cat_ver_todas'; } catch(e) { return 'cat_ver_todas'; } })() : 'cat_ver_todas' }]\n      ]},\n      session_updates: { estado_fsm: 'SELECCION_CANTIDAD', carrito_json: inputData.carrito_json || '[]', contexto_json: inputData.contexto_json || '{}' }\n    }\n  }];\n}\n\nif (cb.startsWith('qty_')) {\n  const parts = cb.replace('qty_', '').split('_');\n  const productId = parts.slice(0, -1).join('_');\n  const qty = parseInt(parts[parts.length - 1]) || 1;\n  const product = menuItems.find(i => i.id_producto === productId);\n\n  let cart = [];\n  try { cart = JSON.parse(inputData.carrito_json || '[]'); } catch(e) {}\n\n  if (product) {\n    const existing = cart.find(i => i.id === productId);\n    if (existing) { existing.qty += qty; }\n    else { cart.push({ id: productId, nombre: product.nombre, precio: parseFloat(product.precio), qty: qty }); }\n  }\n\n  let ctx = {};\n  try { ctx = JSON.parse(inputData.contexto_json || '{}'); } catch(e) {}\n\n  return [{\n    json: {\n      mensaje: '\u2705 ' + qty + 'x ' + (product ? product.nombre : 'Producto') + ' agregado al carrito.',\n      reply_markup: { inline_keyboard: [\n        [{ text: '\u2b05\ufe0f Seguir comprando', callback_data: ctx.current_category ? 'cat_' + ctx.current_category : 'cat_ver_todas' }],\n        [{ text: '\ud83d\uded2 Ver Carrito', callback_data: 'view_cart' }]\n      ]},\n      session_updates: { estado_fsm: 'SELECCION_CANTIDAD', carrito_json: JSON.stringify(cart), contexto_json: inputData.contexto_json || '{}' }\n    }\n  }];\n}\n\nif (text === '/ayuda') {\n  return [{\n    json: {\n      mensaje: '\ud83e\udd16 *Ayuda DeliveryBot*\\n\\nUsa los botones del men\u00fa para hacer tus pedidos. Tambi\u00e9n puedes usar estos comandos:\\n\\n/start - Reiniciar el bot\\n/estado - Ver tus pedidos recientes\\n/cancelar - Vaciar tu carrito\\n/ayuda - Mostrar este mensaje',\n      reply_markup: { inline_keyboard: [[{ text: '\u2b05\ufe0f Men\u00fa Principal', callback_data: 'main_menu' }]] },\n      session_updates: { estado_fsm: 'MENU_PRINCIPAL', carrito_json: inputData.carrito_json || '[]', contexto_json: '{}' }\n    }\n  }];\n}\n\nif (cb === 'confirm_track') {\n  return [{\n    json: {\n      mensaje: '\ud83d\udccd *Seguimiento*\\n\\nPor favor, ingresa tu n\u00famero de orden (ej: ORD-1234):',\n      reply_markup: { inline_keyboard: [[{ text: '\u2b05\ufe0f Volver', callback_data: 'main_menu' }]] },\n      session_updates: { estado_fsm: 'TRACK_ORDER', carrito_json: inputData.carrito_json || '[]', contexto_json: '{}' }\n    }\n  }];\n}\n\nlet baseMsg = '\u00a1Bienvenido a DeliveryBot! \ud83c\udf54\\n\\nPor favor, selecciona una opci\u00f3n:';\nif (text === '/cancelar') {\n  baseMsg = '\u2705 *Operaci\u00f3n cancelada exitosamente y carrito vaciado.*\\n\\n' + baseMsg;\n}\n\nreturn [{\n  json: {\n    mensaje: baseMsg,\n    reply_markup: { inline_keyboard: [\n      [{ text: '\ud83d\uded2 Hacer Pedido', callback_data: 'cat_ver_todas' }],\n      [{ text: '\ud83d\udccb Mis Pedidos', callback_data: 'cart_ver_historial' }, { text: '\ud83d\udccd Seguir Pedido', callback_data: 'confirm_track' }]\n    ]},\n    session_updates: { estado_fsm: 'MENU_PRINCIPAL', carrito_json: '[]', contexto_json: '{}' }\n  }\n}];"
       },
       "id": "format-main-menu",
       "name": "Format Main Menu",
@@ -136,6 +145,89 @@
         400,
         160
       ]
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst text = $('Execute Workflow Trigger').first().json.text || \"\";\nlet cancelOrderId = null;\nif (text === \"/cancelar\") {\n  try {\n    let allPedidos = $('Read PEDIDOS').all().map(i => i.json);\n    let myPending = allPedidos.filter(p => String(p.telegram_id) === String($('Execute Workflow Trigger').first().json.telegram_id) && p.estado === \"RECIBIDO\");\n    if (myPending.length > 0) {\n      cancelOrderId = myPending[myPending.length - 1].id_pedido;\n    }\n  } catch(e) {}\n}\nif (cancelOrderId) {\n  return [{ json: { cancelOrderId: cancelOrderId, text: text } }];\n}\nreturn [{ json: { skip: true, text: text } }];\n"
+      },
+      "id": "check-cancel-node",
+      "name": "Check Cancel",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        300,
+        -150
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.cancelOrderId }}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        }
+      },
+      "id": "if-cancel-node",
+      "name": "Has Cancel Order?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        450,
+        -150
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1ENztX5Jw-W8upEOijCgdVbi2_cHfBbOO0Y4O0s6rpuw",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "PEDIDOS",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "estado": "CANCELADO"
+          },
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "cellFormat": "USER_ENTERED"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "id_pedido",
+              "lookupValue": "={{ $json.cancelOrderId }}"
+            }
+          ]
+        }
+      },
+      "id": "cancel-pedidos-node",
+      "name": "Cancel PEDIDOS",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        300,
+        0
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "15AvKlr14Qt1VZsU",
+          "name": "Google Sheets account"
+        }
+      }
     }
   ],
   "connections": {
@@ -194,7 +286,7 @@
       "main": [
         [
           {
-            "node": "Format Main Menu",
+            "node": "Check Cancel",
             "type": "main",
             "index": 0
           }
@@ -202,6 +294,46 @@
       ]
     },
     "Limit Menu": {
+      "main": [
+        [
+          {
+            "node": "Format Main Menu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Cancel": {
+      "main": [
+        [
+          {
+            "node": "Has Cancel Order?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Cancel Order?": {
+      "main": [
+        [
+          {
+            "node": "Cancel PEDIDOS",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Format Main Menu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cancel PEDIDOS": {
       "main": [
         [
           {

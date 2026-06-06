@@ -236,7 +236,7 @@
     {
       "parameters": {
         "chatId": "={{ $('Read Order - Prep').first().json.telegram_id }}",
-        "text": "=👨‍🍳 Tu pedido #{{ $('Parse Admin Action').first().json.orderId }} está siendo preparado. ⏱ Tiempo estimado: 10-15 min",
+        "text": "=\ud83d\udc68\u200d\ud83c\udf73 Tu pedido #{{ $('Parse Admin Action').first().json.orderId }} est\u00e1 siendo preparado. \u23f1 Tiempo estimado: 10-15 min",
         "additionalFields": {
           "parse_mode": "Markdown"
         }
@@ -262,7 +262,7 @@
         "operation": "editMessageText",
         "chatId": "={{ $('Parse Admin Action').first().json.chatId }}",
         "messageId": "={{ $('Parse Admin Action').first().json.messageId }}",
-        "text": "=🔄 Pedido #{{ $('Parse Admin Action').first().json.orderId }} — Estado: *PREPARACIÓN*",
+        "text": "=\ud83d\udd04 Pedido #{{ $('Parse Admin Action').first().json.orderId }} \u2014 Estado: *PREPARACI\u00d3N*",
         "replyMarkup": "inlineKeyboard",
         "inlineKeyboard": {
           "rows": [
@@ -270,13 +270,13 @@
               "row": {
                 "buttons": [
                   {
-                    "text": "🚴 En camino",
+                    "text": "\ud83d\udeb4 En camino",
                     "additionalFields": {
                       "callback_data": "=admin_enroute_{{ $('Parse Admin Action').first().json.orderId }}"
                     }
                   },
                   {
-                    "text": "✅ Entregado",
+                    "text": "\u2705 Entregado",
                     "additionalFields": {
                       "callback_data": "=admin_delivered_{{ $('Parse Admin Action').first().json.orderId }}"
                     }
@@ -396,7 +396,7 @@
     {
       "parameters": {
         "chatId": "={{ $('Read Order - Enroute').first().json.telegram_id }}",
-        "text": "=🚴 Tu pedido #{{ $('Parse Admin Action').first().json.orderId }} va en camino. ¡Prepárate para recibirlo!",
+        "text": "=\ud83d\udeb4 Tu pedido #{{ $('Parse Admin Action').first().json.orderId }} va en camino. \u00a1Prep\u00e1rate para recibirlo!",
         "additionalFields": {
           "parse_mode": "Markdown"
         }
@@ -422,7 +422,7 @@
         "operation": "editMessageText",
         "chatId": "={{ $('Parse Admin Action').first().json.chatId }}",
         "messageId": "={{ $('Parse Admin Action').first().json.messageId }}",
-        "text": "=🚴 Pedido #{{ $('Parse Admin Action').first().json.orderId }} — Estado: *EN CAMINO*",
+        "text": "=\ud83d\udeb4 Pedido #{{ $('Parse Admin Action').first().json.orderId }} \u2014 Estado: *EN CAMINO*",
         "replyMarkup": "inlineKeyboard",
         "inlineKeyboard": {
           "rows": [
@@ -430,7 +430,7 @@
               "row": {
                 "buttons": [
                   {
-                    "text": "✅ Entregado",
+                    "text": "\u2705 Entregado",
                     "additionalFields": {
                       "callback_data": "=admin_delivered_{{ $('Parse Admin Action').first().json.orderId }}"
                     }
@@ -551,7 +551,7 @@
     {
       "parameters": {
         "chatId": "={{ $('Read Order - Delivered').first().json.telegram_id }}",
-        "text": "=✅ Tu pedido #{{ $('Parse Admin Action').first().json.orderId }} ha sido entregado. ¡Buen provecho! 🍽",
+        "text": "=\u2705 Tu pedido #{{ $('Parse Admin Action').first().json.orderId }} ha sido entregado. \u00a1Buen provecho! \ud83c\udf7d",
         "additionalFields": {
           "parse_mode": "Markdown"
         }
@@ -577,7 +577,7 @@
         "operation": "editMessageText",
         "chatId": "={{ $('Parse Admin Action').first().json.chatId }}",
         "messageId": "={{ $('Parse Admin Action').first().json.messageId }}",
-        "text": "=✅ Pedido #{{ $('Parse Admin Action').first().json.orderId }} completado",
+        "text": "=\u2705 Pedido #{{ $('Parse Admin Action').first().json.orderId }} completado",
         "replyMarkup": "none",
         "additionalFields": {
           "parse_mode": "Markdown"
@@ -922,7 +922,7 @@
     {
       "parameters": {
         "chatId": "={{ $('Read Order - Reject').first().json.telegram_id }}",
-        "text": "=😔 Lo sentimos, tu pedido #{{ $('Parse Admin Action').first().json.orderId }} no pudo ser procesado. El monto no fue cobrado.",
+        "text": "=\ud83d\ude14 Lo sentimos, tu pedido #{{ $('Parse Admin Action').first().json.orderId }} no pudo ser procesado. El monto no fue cobrado.",
         "additionalFields": {
           "parse_mode": "Markdown"
         }
@@ -977,7 +977,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Error handler — log the error details\nconst error = $input.first().json;\nconst errorMsg = `[WF_ADMIN_PANEL] Error: ${JSON.stringify(error)}`;\nconsole.log(errorMsg);\n\nreturn [{\n  json: {\n    tipo: 'ADMIN_PANEL_ERROR',\n    detalle: errorMsg,\n    timestamp: new Date().toISOString()\n  }\n}];"
+        "jsCode": "// Error handler \u2014 log the error details\nconst error = $input.first().json;\nconst errorMsg = `[WF_ADMIN_PANEL] Error: ${JSON.stringify(error)}`;\nconsole.log(errorMsg);\n\nreturn [{\n  json: {\n    tipo: 'ADMIN_PANEL_ERROR',\n    detalle: errorMsg,\n    timestamp: new Date().toISOString()\n  }\n}];"
       },
       "id": "a1000000-0000-0000-0000-000000000070",
       "name": "Error Handler",
@@ -1028,7 +1028,7 @@
     {
       "parameters": {
         "chatId": "={{ $env.ADMIN_CHAT_ID || '' }}",
-        "text": "=🚨 *Error en Admin Panel*\n\n{{ $json.detalle }}",
+        "text": "=\ud83d\udea8 *Error en Admin Panel*\n\n{{ $json.detalle }}",
         "additionalFields": {
           "parse_mode": "Markdown"
         }
@@ -1047,6 +1047,75 @@
           "name": "Telegram account"
         }
       }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ .first().json.estado }}",
+              "rightValue": "CANCELADO",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "already-cancelled-node",
+      "name": "Already Cancelled?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1210,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "editMessageText",
+        "chatId": "={{ .first().json.chatId }}",
+        "messageId": "={{ .first().json.messageId }}",
+        "text": "=\ud83d\udeab Pedido #{{ .first().json.orderId }} \u2014 Estado: *CANCELADO POR EL USUARIO*",
+        "replyMarkup": "none",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "update-msg-cancelled",
+      "name": "Update Kitchen Msg - Cancelled",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1420,
+        -300
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "ZK5tkFfqOriXG3BO",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "error-trigger-node",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        700
+      ]
     }
   ],
   "connections": {
@@ -1131,7 +1200,7 @@
       "main": [
         [
           {
-            "node": "Update PEDIDOS - Prep",
+            "node": "Already Cancelled?",
             "type": "main",
             "index": 0
           }
@@ -1336,6 +1405,35 @@
         [
           {
             "node": "Notify Admin Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Already Cancelled?": {
+      "main": [
+        [
+          {
+            "node": "Update Kitchen Msg - Cancelled",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update PEDIDOS - Prep",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Error Handler",
             "type": "main",
             "index": 0
           }
