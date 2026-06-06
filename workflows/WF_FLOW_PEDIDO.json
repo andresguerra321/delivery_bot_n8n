@@ -47,7 +47,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const inputData = $('Execute Workflow Trigger').first().json;\nconst menuItems = $('Read Menu').all().map(i => i.json);\nlet cart = [];\ntry { cart = JSON.parse(inputData.carrito_json || '[]'); } catch(e) {}\n\nconst TAX_RATE = 0.12;\nlet subtotal = 0;\nlet errors = [];\n\nfor (const item of cart) {\n  const menuItem = menuItems.find(m => m.id_producto === item.id);\n  if (!menuItem) {\n    errors.push(item.nombre + ' ya no está disponible');\n    continue;\n  }\n  const stock = parseInt(menuItem.stock);\n  if (stock < item.qty) {\n    errors.push(item.nombre + ': solo quedan ' + stock + ' unidades');\n    continue;\n  }\n  subtotal += item.qty * parseFloat(menuItem.precio);\n}\n\nconst iva = Math.round(subtotal * TAX_RATE * 100) / 100;\nconst total = Math.round((subtotal + iva) * 100) / 100;\n\nconst now = new Date();\nconst dateStr = now.toISOString().slice(0, 10).replace(/-/g, '');\nconst randomNum = Math.floor(1000 + Math.random() * 9000);\nconst orderId = 'ORD-' + dateStr + '-' + randomNum;\nconst detalles = cart.map(i => i.nombre + ' x' + i.qty).join(', ');\n\nreturn [{ json: {\n  valid: errors.length === 0,\n  errors: errors,\n  orderId, subtotal, iva, total, detalles,\n  carrito_json: inputData.carrito_json || '[]',\n  telegram_id: inputData.telegram_id,\n  chat_id: inputData.chat_id,\n  first_name: inputData.first_name || 'Usuario',\n  fecha: now.toISOString().split('T')[0],\n  hora: now.toTimeString().split(' ')[0]\n}}];"
+        "jsCode": "const inputData = $('Execute Workflow Trigger').first().json;\nconst menuItems = $('Read Menu').all().map(i => i.json);\nlet cart = [];\ntry { cart = JSON.parse(inputData.carrito_json || '[]'); } catch(e) {}\n\nconst TAX_RATE = 0.12;\nlet subtotal = 0;\nlet errors = [];\n\nfor (const item of cart) {\n  const menuItem = menuItems.find(m => m.id_producto === item.id);\n  if (!menuItem) {\n    errors.push(item.nombre + ' ya no está disponible');\n    continue;\n  }\n  const stock = parseInt(menuItem.stock);\n  if (stock < item.qty) {\n    errors.push(item.nombre + ': solo quedan ' + stock + ' unidades');\n    continue;\n  }\n  subtotal += item.qty * parseFloat(menuItem.precio);\n}\n\nconst iva = Math.round(subtotal * TAX_RATE * 100) / 100;\nconst total = Math.round((subtotal + iva) * 100) / 100;\n\nconst now = new Date();\nconst dateStr = now.toISOString().slice(0, 10).replace(/-/g, '');\nconst randomNum = Math.floor(1000 + Math.random() * 9000);\nconst orderId = 'ORD-' + dateStr + '-' + randomNum;\nconst detalles = cart.map(i => i.nombre + ' x' + i.qty).join(', ');\n\nreturn [{ json: {\n  valid: errors.length === 0,\n  errors: errors,\n  id_pedido: orderId, subtotal: subtotal, iva: iva, total_pago: total, detalles_pedido: detalles, estado: 'RECIBIDO',\n  \n  telegram_id: inputData.telegram_id,\n  chat_id: inputData.chat_id,\n  first_name: inputData.first_name || 'Usuario',\n  fecha: now.toISOString().split('T')[0],\n  hora: now.toTimeString().split(' ')[0]\n}}];"
       },
       "id": "p-validate",
       "name": "Validate & Calculate",
@@ -92,16 +92,7 @@
           "mode": "name"
         },
         "columns": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "id_pedido": "={{ $json.orderId }}",
-            "telegram_id": "={{ $json.telegram_id }}",
-            "detalles_pedido": "={{ $json.detalles }}",
-            "total_pago": "={{ $json.total }}",
-            "estado": "RECIBIDO",
-            "fecha": "={{ $json.fecha }}",
-            "hora": "={{ $json.hora }}"
-          }
+          "mappingMode": "autoMapInputData"
         },
         "options": {}
       },
@@ -122,7 +113,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const calc = $('Validate & Calculate').first().json;\nconst inputData = $('Execute Workflow Trigger').first().json;\n\nconst text = '🛎 *Nuevo Pedido Recibido*\\n\\n📦 Orden: #' + calc.orderId + '\\n👤 ' + calc.first_name + '\\n📋 ' + calc.detalles + '\\n💵 Total: $' + calc.total.toFixed(2);\n\nconst keyboard = {\n  inline_keyboard: [\n    [\n      { text: '🍳 Preparar', callback_data: 'admin_prep_' + calc.orderId },\n      { text: '❌ Rechazar', callback_data: 'admin_reject_' + calc.orderId }\n    ]\n  ]\n};\n\nreturn [{ json: {\n  chat_id: inputData.chat_id,\n  text: text,\n  parse_mode: 'Markdown',\n  reply_markup: keyboard\n}}];"
+        "jsCode": "const calc = $('Validate & Calculate').first().json;\nconst inputData = $('Execute Workflow Trigger').first().json;\n\nconst text = '🛎 *Nuevo Pedido Recibido*\\n\\n📦 Orden: #' + calc.id_pedido + '\\n👤 ' + calc.first_name + '\\n📋 ' + calc.detalles_pedido + '\\n💵 Total: $' + calc.total_pago.toFixed(2);\n\nconst keyboard = {\n  inline_keyboard: [\n    [\n      { text: '🍳 Preparar', callback_data: 'admin_prep_' + calc.id_pedido },\n      { text: '❌ Rechazar', callback_data: 'admin_reject_' + calc.id_pedido }\n    ]\n  ]\n};\n\nreturn [{ json: {\n  chat_id: inputData.chat_id,\n  text: text,\n  parse_mode: 'Markdown',\n  reply_markup: keyboard\n}}];"
       },
       "id": "p-kitchen-payload",
       "name": "Kitchen Payload",
@@ -216,7 +207,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const calc = $('Validate & Calculate').first().json;\nreturn [{\n  json: {\n    mensaje: '✅ *¡Pedido confirmado!*\\n\\n📦 Orden: #' + calc.orderId + '\\n💰 Subtotal: $' + calc.subtotal.toFixed(2) + '\\n📊 IVA (12%): $' + calc.iva.toFixed(2) + '\\n💵 Total: $' + calc.total.toFixed(2) + '\\n📍 Estado: Recibido\\n\\nTe notificaremos cuando esté en preparación. 🍳',\n    reply_markup: { inline_keyboard: [[{ text: '🏠 Menú Principal', callback_data: 'main_menu' }]] },\n    session_updates: { estado_fsm: 'IDLE', carrito_json: '[]', contexto_json: '{}' }\n  }\n}];"
+        "jsCode": "const calc = $('Validate & Calculate').first().json;\nreturn [{\n  json: {\n    mensaje: '✅ *¡Pedido confirmado!*\\n\\n📦 Orden: #' + calc.id_pedido + '\\n💰 Subtotal: $' + calc.subtotal.toFixed(2) + '\\n📊 IVA (12%): $' + calc.iva.toFixed(2) + '\\n💵 Total: $' + calc.total_pago.toFixed(2) + '\\n📍 Estado: Recibido\\n\\nTe notificaremos cuando esté en preparación. 🍳',\n    reply_markup: { inline_keyboard: [[{ text: '🏠 Menú Principal', callback_data: 'main_menu' }]] },\n    session_updates: { estado_fsm: 'IDLE', carrito_json: '[]', contexto_json: '{}' }\n  }\n}];"
       },
       "id": "p-success",
       "name": "Format Success",
