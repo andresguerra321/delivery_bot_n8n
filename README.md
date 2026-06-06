@@ -576,14 +576,17 @@ Mensaje entrante
 | Bot responde lento (>5s) | Demasiadas lecturas individuales a Sheets | Implementar batch reads y caché en memoria |
 | Error "Sheet not found" | Nombre de hoja incorrecto o faltante | Verificar que todas las 7 hojas existen con nombres exactos |
 | Usuario no puede agregar al carrito | Sesión expirada silenciosamente | Enviar `/start` para reiniciar; verificar SESSION_TTL_MIN |
+| Botones de Cocina ("Preparar") no responden | Conflicto de Webhooks de Telegram | Todo callback de Telegram debe ser recibido por `WF_MAIN_ROUTER` y pasado al sub-flujo (`WF_ADMIN_PANEL`). El sub-flujo NO debe tener su propio `Telegram Trigger`. |
+| Error `Could not get parameter` en el Router | Bug en n8n v1.3+ al ocultar parámetros de sub-flujos | Limpiar los datos usando un nodo `Set` explícito antes de invocar un sub-flujo para prevenir la evaluación de variables fantasma del nodo `Execute Workflow`. |
+| Error `Could not get parameter` en Google Sheets (Update) | Cambio estructural en n8n v2.23+ para Google Sheets | La nueva versión exige propiedades en el JSON (`matchingColumns`, `schema`, etc). Abre el nodo viejo, realiza un cambio menor y presiona "Save" para regenerar la estructura, o edita el JSON directamente. |
 
 ---
 
 ## 🗺 Roadmap
 
 - [x] **v0.1**: Estructura de datos y modelo relacional
-- [ ] **v1.0**: Flujo completo de pedidos (menú → carrito → confirmación)
-- [ ] **v1.1**: Panel de administración y notificaciones a cocina
+- [x] **v1.0**: Flujo completo de pedidos (menú → carrito → confirmación)
+- [x] **v1.1**: Panel de administración y notificaciones a cocina
 - [ ] **v1.2**: Reportes automáticos y métricas de negocio
 - [ ] **v1.3**: Sistema de puntos de lealtad con canjeo de productos
 - [ ] **v2.0**: Integración con métodos de pago (MercadoPago / Stripe)
