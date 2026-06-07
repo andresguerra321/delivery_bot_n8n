@@ -615,3 +615,25 @@ MIT License — ver archivo [LICENSE](LICENSE) para detalles.
   <strong>¿Preguntas o sugerencias?</strong><br>
   Abre un Issue o contacta al administrador del proyecto.
 </p>
+
+
+## 📸 Capturas de Pantalla
+
+A continuación se muestra el funcionamiento real del sistema DeliveryBot en acción, desde la vista del cliente en Telegram hasta las notificaciones en la cocina y los flujos en n8n:
+
+### Exploración del Menú
+![Categorías del Menú](assets/categorias.png)
+
+### Selección de Productos y Cantidades
+![Pedido por Unidades](assets/pedido%20por%20unidades.png)
+![Confirmación de Unidades](assets/confirmacion%20unidades.png)
+
+### Carrito y Confirmación
+![Carrito con IVA](assets/confirmacion%20carrito%20+%20iva.png)
+![Confirmación del Pedido](assets/confirmacion%20pedido.png)
+
+### Panel de Administración (Cocina)
+![Notificación a Cocina](assets/notificacion%20cocina.png)
+
+### Flujos en n8n
+![Flujo del Menú](assets/flujo%20menu.png)
