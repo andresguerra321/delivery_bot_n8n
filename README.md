@@ -189,6 +189,8 @@ ayuda - Mostrar ayuda
 
 ### Paso 2: Configurar Google Sheets
 
+> 💡 **Tip:** Puedes [entrar a ver mi Base de Datos aquí](https://docs.google.com/spreadsheets/d/1ENztX5Jw-W8upEOijCgdVbi2_cHfBbOO0Y4O0s6rpuw/edit?usp=sharing) para usarla como referencia.
+
 1. Crear un nuevo Google Spreadsheet llamado **`DeliveryBot_DB`**
 2. Crear las siguientes hojas (tabs), renombrando las existentes y agregando nuevas:
    - `MENU`
