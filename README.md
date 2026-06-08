@@ -7,6 +7,8 @@
 ![Google Sheets](https://img.shields.io/badge/Google%20Sheets-API%20v4-34A853)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
+👉 **[Ver Capturas de Pantalla del Sistema en Acción](#-capturas-de-pantalla)**
+
 ---
 
 ## 📋 Tabla de Contenidos
@@ -24,6 +26,7 @@
 - [🗺 Roadmap](#-roadmap)
 - [📄 Licencia](#-licencia)
 - [👤 Autor](#-autor)
+- [📸 Capturas de Pantalla](#-capturas-de-pantalla)
 
 ---
 
@@ -639,3 +642,5 @@ A continuación se muestra el funcionamiento real del sistema DeliveryBot en acc
 
 ### Flujos en n8n
 ![Flujo del Menú](assets/flujo%20menu.png)
+![Flujo Principal](assets/flow%20principal.png)
+![Flujo de Navegación](assets/flow%20menu.png)
