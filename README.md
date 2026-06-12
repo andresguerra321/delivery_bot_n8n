@@ -657,3 +657,24 @@ A continuación se muestra el funcionamiento real del sistema DeliveryBot en acc
 ![Flujo del Menú](assets/flujo%20menu.png)
 ![Flujo Principal](assets/flow%20principal.png)
 ![Flujo de Navegación](assets/flow%20menu.png)
+
+---
+
+## 🕒 Update: Examen Horario
+
+Se ha implementado una restricción en el sistema para evitar que los usuarios envíen pedidos fuera del horario de atención de la cafetería (Lunes a Viernes de 8:00 AM a 5:00 PM).
+
+### Lógica Implementada
+Se agregó un nodo **IF (`Check Business Hours`)** en el flujo `WF_FLOW_PEDIDO.json` justo después de que el usuario selecciona "Sí, enviar pedido". 
+El nodo evalúa la hora del servidor de n8n mediante la expresión de Luxon:
+```javascript
+{{ $now.weekday >= 1 && $now.weekday <= 5 && $now.hour >= 8 && $now.hour < 17 }}
+```
+
+- **Ruta Verdadera (Dentro de horario):** El flujo continúa normalmente, descuenta el stock y envía la orden a cocina.
+- **Ruta Falsa (Fuera de horario):** El flujo se detiene y se activa un nodo Code (`Closed Message`) que retorna el siguiente mensaje al usuario, permitiendo explorar el menú pero no pedir:
+> *"🌙 Cafetería Cerrada. Nuestro horario es de Lunes a Viernes, 8am a 5pm. ¡Te esperamos mañana!"*
+
+### Vistas del Mensaje de Cierre
+![Mensaje en Telegram](assets/mensaje%20telegram%20cerrado.png)
+![Flujo Fuera de Servicio](assets/mensaje%20cerrado%20fuera%20de%20servicio.png)

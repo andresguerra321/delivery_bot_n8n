@@ -14,6 +14,39 @@
     },
     {
       "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $now.weekday >= 1 && $now.weekday <= 5 && $now.hour >= 8 && $now.hour < 17 }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "node-check-business-hours",
+      "name": "Check Business Hours",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -500,
+        528
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    mensaje: '\ud83c\udf19 Cafeter\u00eda Cerrada. Nuestro horario es de Lunes a Viernes, 8am a 5pm. \u00a1Te esperamos ma\u00f1ana!',\n    reply_markup: { inline_keyboard: [[{ text: '\ud83c\udfe0 Men\u00fa Principal', callback_data: 'main_menu' }]] },\n    session_updates: { estado_fsm: 'IDLE', carrito_json: '[]', contexto_json: '{}' }\n  }\n}];"
+      },
+      "id": "node-closed-message",
+      "name": "Closed Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -300,
+        700
+      ]
+    },
+    {
+      "parameters": {
         "operation": "append",
         "base": {
           "__rl": true,
@@ -150,7 +183,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const menuItems = $('Read Menu').all().map(i => i.json);\nconst calc = $('Validate & Calculate').first().json;\nlet cart = [];\ntry { cart = JSON.parse(calc.carrito_json || '[]'); } catch(e) {}\n\nconst results = [];\nfor (const cartItem of cart) {\n  const menuItem = menuItems.find(m => m.id_producto === cartItem.id);\n  if (menuItem) {\n    results.push({\n      json: {\n        id_producto: cartItem.id,\n        stock: (parseInt(menuItem.stock) - cartItem.qty).toString()\n      }\n    });\n  }\n}\nreturn results.length > 0 ? results : [{ json: { id_producto: 'none', stock: '0' } }];"
+        "jsCode": "const menuItems = $('Read Menu').all().map(i => i.json);\nconst calc = $('Validate & Calculate').first().json;\nlet cart = [];\ntry { cart = JSON.parse(calc.carrito_json || '[]'); } catch(e) {}\n\nconst results = [];\nfor (const cartItem of cart) {\n  const menuItem = menuItems.find(m => m.id_producto === cartItem.id);\n  if (menuItem) {\n    results.push({\n      json: {\n        id_producto: cartItem.id,\n        stock: parseInt(menuItem.stock) - cartItem.qty\n      }\n    });\n  }\n}\nreturn results.length > 0 ? results : [{ json: { id_producto: 'none', stock: 0 } }];"
       },
       "id": "a60b924a-2c32-4750-adca-c9d5ba56021f",
       "name": "Prepare Deductions",
@@ -182,7 +215,8 @@
       "position": [
         1200,
         400
-      ]
+      ],
+      "onError": "continueRegularOutput"
     },
     {
       "parameters": {
@@ -237,7 +271,25 @@
       "main": [
         [
           {
+            "node": "Check Business Hours",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Business Hours": {
+      "main": [
+        [
+          {
             "node": "Read PEDIDOS",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Closed Message",
             "type": "main",
             "index": 0
           }
