@@ -147,91 +147,49 @@
     },
     {
       "parameters": {
-        "operation": "read",
-        "documentId": {
+        "operation": "search",
+        "base": {
           "__rl": true,
-          "value": "1ENztX5Jw-W8upEOijCgdVbi2_cHfBbOO0Y4O0s6rpuw",
+          "value": "",
           "mode": "id"
         },
-        "sheetName": {
+        "table": {
           "__rl": true,
-          "value": "PEDIDOS",
-          "mode": "name"
-        },
-        "filtersUI": {
-          "values": [
-            {
-              "lookupColumn": "id_pedido",
-              "lookupValue": "={{ $json.orderId }}"
-            }
-          ]
-        },
-        "options": {}
+          "value": "",
+          "mode": "id"
+        }
       },
       "id": "a1000000-0000-0000-0000-000000000010",
       "name": "Read Order - Prep",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4.5,
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
       "position": [
         1100,
         -100
-      ],
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "15AvKlr14Qt1VZsU",
-          "name": "Google Sheets account"
-        }
-      }
+      ]
     },
     {
       "parameters": {
         "operation": "update",
-        "documentId": {
+        "base": {
           "__rl": true,
-          "value": "1ENztX5Jw-W8upEOijCgdVbi2_cHfBbOO0Y4O0s6rpuw",
+          "value": "",
           "mode": "id"
         },
-        "sheetName": {
+        "table": {
           "__rl": true,
-          "value": "PEDIDOS",
-          "mode": "name"
-        },
-        "columns": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "estado": "PREPARACION"
-          },
-          "matchingColumns": [],
-          "schema": [],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": true
-        },
-        "options": {
-          "cellFormat": "USER_ENTERED"
-        },
-        "filtersUI": {
-          "values": [
-            {
-              "lookupColumn": "id_pedido",
-              "lookupValue": "={{ $('Parse Admin Action').first().json.orderId }}"
-            }
-          ]
+          "value": "",
+          "mode": "id"
         }
       },
       "id": "a1000000-0000-0000-0000-000000000011",
       "name": "Update PEDIDOS - Prep",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4.5,
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
       "position": [
         1320,
         -100
-      ],
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "15AvKlr14Qt1VZsU",
-          "name": "Google Sheets account"
-        }
-      }
+      ]
     },
     {
       "parameters": {
@@ -307,91 +265,49 @@
     },
     {
       "parameters": {
-        "operation": "read",
-        "documentId": {
+        "operation": "search",
+        "base": {
           "__rl": true,
-          "value": "1ENztX5Jw-W8upEOijCgdVbi2_cHfBbOO0Y4O0s6rpuw",
+          "value": "",
           "mode": "id"
         },
-        "sheetName": {
+        "table": {
           "__rl": true,
-          "value": "PEDIDOS",
-          "mode": "name"
-        },
-        "filtersUI": {
-          "values": [
-            {
-              "lookupColumn": "id_pedido",
-              "lookupValue": "={{ $json.orderId }}"
-            }
-          ]
-        },
-        "options": {}
+          "value": "",
+          "mode": "id"
+        }
       },
       "id": "a1000000-0000-0000-0000-000000000020",
       "name": "Read Order - Enroute",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4.5,
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
       "position": [
         1100,
         100
-      ],
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "15AvKlr14Qt1VZsU",
-          "name": "Google Sheets account"
-        }
-      }
+      ]
     },
     {
       "parameters": {
         "operation": "update",
-        "documentId": {
+        "base": {
           "__rl": true,
-          "value": "1ENztX5Jw-W8upEOijCgdVbi2_cHfBbOO0Y4O0s6rpuw",
+          "value": "",
           "mode": "id"
         },
-        "sheetName": {
+        "table": {
           "__rl": true,
-          "value": "PEDIDOS",
-          "mode": "name"
-        },
-        "columns": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "estado": "EN_CAMINO"
-          },
-          "matchingColumns": [],
-          "schema": [],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": true
-        },
-        "options": {
-          "cellFormat": "USER_ENTERED"
-        },
-        "filtersUI": {
-          "values": [
-            {
-              "lookupColumn": "id_pedido",
-              "lookupValue": "={{ $('Parse Admin Action').first().json.orderId }}"
-            }
-          ]
+          "value": "",
+          "mode": "id"
         }
       },
       "id": "a1000000-0000-0000-0000-000000000021",
       "name": "Update PEDIDOS - Enroute",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4.5,
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
       "position": [
         1320,
         100
-      ],
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "15AvKlr14Qt1VZsU",
-          "name": "Google Sheets account"
-        }
-      }
+      ]
     },
     {
       "parameters": {
@@ -461,92 +377,49 @@
     },
     {
       "parameters": {
-        "operation": "read",
-        "documentId": {
+        "operation": "search",
+        "base": {
           "__rl": true,
-          "value": "1ENztX5Jw-W8upEOijCgdVbi2_cHfBbOO0Y4O0s6rpuw",
+          "value": "",
           "mode": "id"
         },
-        "sheetName": {
+        "table": {
           "__rl": true,
-          "value": "PEDIDOS",
-          "mode": "name"
-        },
-        "filtersUI": {
-          "values": [
-            {
-              "lookupColumn": "id_pedido",
-              "lookupValue": "={{ $json.orderId }}"
-            }
-          ]
-        },
-        "options": {}
+          "value": "",
+          "mode": "id"
+        }
       },
       "id": "a1000000-0000-0000-0000-000000000030",
       "name": "Read Order - Delivered",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4.5,
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
       "position": [
         1100,
         300
-      ],
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "15AvKlr14Qt1VZsU",
-          "name": "Google Sheets account"
-        }
-      }
+      ]
     },
     {
       "parameters": {
         "operation": "update",
-        "documentId": {
+        "base": {
           "__rl": true,
-          "value": "1ENztX5Jw-W8upEOijCgdVbi2_cHfBbOO0Y4O0s6rpuw",
+          "value": "",
           "mode": "id"
         },
-        "sheetName": {
+        "table": {
           "__rl": true,
-          "value": "PEDIDOS",
-          "mode": "name"
-        },
-        "columns": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "estado": "ENTREGADO",
-            "hora_entrega": "={{ new Date().toISOString() }}"
-          },
-          "matchingColumns": [],
-          "schema": [],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": true
-        },
-        "options": {
-          "cellFormat": "USER_ENTERED"
-        },
-        "filtersUI": {
-          "values": [
-            {
-              "lookupColumn": "id_pedido",
-              "lookupValue": "={{ $('Parse Admin Action').first().json.orderId }}"
-            }
-          ]
+          "value": "",
+          "mode": "id"
         }
       },
       "id": "a1000000-0000-0000-0000-000000000031",
       "name": "Update PEDIDOS - Delivered",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4.5,
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
       "position": [
         1320,
         300
-      ],
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "15AvKlr14Qt1VZsU",
-          "name": "Google Sheets account"
-        }
-      }
+      ]
     },
     {
       "parameters": {
@@ -613,179 +486,95 @@
     },
     {
       "parameters": {
-        "operation": "read",
-        "documentId": {
+        "operation": "search",
+        "base": {
           "__rl": true,
-          "value": "1ENztX5Jw-W8upEOijCgdVbi2_cHfBbOO0Y4O0s6rpuw",
+          "value": "",
           "mode": "id"
         },
-        "sheetName": {
+        "table": {
           "__rl": true,
-          "value": "USUARIOS",
-          "mode": "name"
-        },
-        "filtersUI": {
-          "values": [
-            {
-              "lookupColumn": "telegram_id",
-              "lookupValue": "={{ $json.telegram_id }}"
-            }
-          ]
-        },
-        "options": {}
+          "value": "",
+          "mode": "id"
+        }
       },
       "id": "a1000000-0000-0000-0000-000000000035",
       "name": "Read User Loyalty",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4.5,
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
       "position": [
         2200,
         300
-      ],
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "15AvKlr14Qt1VZsU",
-          "name": "Google Sheets account"
-        }
-      }
+      ]
     },
     {
       "parameters": {
         "operation": "update",
-        "documentId": {
+        "base": {
           "__rl": true,
-          "value": "1ENztX5Jw-W8upEOijCgdVbi2_cHfBbOO0Y4O0s6rpuw",
+          "value": "",
           "mode": "id"
         },
-        "sheetName": {
+        "table": {
           "__rl": true,
-          "value": "USUARIOS",
-          "mode": "name"
-        },
-        "columns": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "puntos_fidelidad": "={{ parseInt($('Read User Loyalty').first().json.puntos_fidelidad || '0') + 10 }}"
-          },
-          "matchingColumns": [],
-          "schema": [],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": true
-        },
-        "options": {
-          "cellFormat": "USER_ENTERED"
-        },
-        "filtersUI": {
-          "values": [
-            {
-              "lookupColumn": "telegram_id",
-              "lookupValue": "={{ $('Prepare Loyalty Points').first().json.telegram_id }}"
-            }
-          ]
+          "value": "",
+          "mode": "id"
         }
       },
       "id": "a1000000-0000-0000-0000-000000000036",
       "name": "Update Loyalty Points",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4.5,
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
       "position": [
         2420,
         300
-      ],
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "15AvKlr14Qt1VZsU",
-          "name": "Google Sheets account"
-        }
-      }
+      ]
     },
     {
       "parameters": {
-        "operation": "read",
-        "documentId": {
+        "operation": "search",
+        "base": {
           "__rl": true,
-          "value": "1ENztX5Jw-W8upEOijCgdVbi2_cHfBbOO0Y4O0s6rpuw",
+          "value": "",
           "mode": "id"
         },
-        "sheetName": {
+        "table": {
           "__rl": true,
-          "value": "PEDIDOS",
-          "mode": "name"
-        },
-        "filtersUI": {
-          "values": [
-            {
-              "lookupColumn": "id_pedido",
-              "lookupValue": "={{ $json.orderId }}"
-            }
-          ]
-        },
-        "options": {}
+          "value": "",
+          "mode": "id"
+        }
       },
       "id": "a1000000-0000-0000-0000-000000000040",
       "name": "Read Order - Reject",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4.5,
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
       "position": [
         1100,
         540
-      ],
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "15AvKlr14Qt1VZsU",
-          "name": "Google Sheets account"
-        }
-      }
+      ]
     },
     {
       "parameters": {
         "operation": "update",
-        "documentId": {
+        "base": {
           "__rl": true,
-          "value": "1ENztX5Jw-W8upEOijCgdVbi2_cHfBbOO0Y4O0s6rpuw",
+          "value": "",
           "mode": "id"
         },
-        "sheetName": {
+        "table": {
           "__rl": true,
-          "value": "PEDIDOS",
-          "mode": "name"
-        },
-        "columns": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "estado": "CANCELADO"
-          },
-          "matchingColumns": [],
-          "schema": [],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": true
-        },
-        "options": {
-          "cellFormat": "USER_ENTERED"
-        },
-        "filtersUI": {
-          "values": [
-            {
-              "lookupColumn": "id_pedido",
-              "lookupValue": "={{ $('Parse Admin Action').first().json.orderId }}"
-            }
-          ]
+          "value": "",
+          "mode": "id"
         }
       },
       "id": "a1000000-0000-0000-0000-000000000041",
       "name": "Update PEDIDOS - Reject",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4.5,
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
       "position": [
         1320,
         540
-      ],
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "15AvKlr14Qt1VZsU",
-          "name": "Google Sheets account"
-        }
-      }
+      ]
     },
     {
       "parameters": {
@@ -833,91 +622,49 @@
     },
     {
       "parameters": {
-        "operation": "read",
-        "documentId": {
+        "operation": "search",
+        "base": {
           "__rl": true,
-          "value": "1ENztX5Jw-W8upEOijCgdVbi2_cHfBbOO0Y4O0s6rpuw",
+          "value": "",
           "mode": "id"
         },
-        "sheetName": {
+        "table": {
           "__rl": true,
-          "value": "MENU",
-          "mode": "name"
-        },
-        "filtersUI": {
-          "values": [
-            {
-              "lookupColumn": "id",
-              "lookupValue": "={{ $json.id }}"
-            }
-          ]
-        },
-        "options": {}
+          "value": "",
+          "mode": "id"
+        }
       },
       "id": "a1000000-0000-0000-0000-000000000044",
       "name": "Read Menu Item Stock",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4.5,
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
       "position": [
         1980,
         440
-      ],
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "15AvKlr14Qt1VZsU",
-          "name": "Google Sheets account"
-        }
-      }
+      ]
     },
     {
       "parameters": {
         "operation": "update",
-        "documentId": {
+        "base": {
           "__rl": true,
-          "value": "1ENztX5Jw-W8upEOijCgdVbi2_cHfBbOO0Y4O0s6rpuw",
+          "value": "",
           "mode": "id"
         },
-        "sheetName": {
+        "table": {
           "__rl": true,
-          "value": "MENU",
-          "mode": "name"
-        },
-        "columns": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "stock": "={{ parseInt($('Read Menu Item Stock').first().json.stock || '0') + parseInt($('Parse Cart for Stock Restore').first().json.cantidad_a_restaurar || '0') }}"
-          },
-          "matchingColumns": [],
-          "schema": [],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": true
-        },
-        "options": {
-          "cellFormat": "USER_ENTERED"
-        },
-        "filtersUI": {
-          "values": [
-            {
-              "lookupColumn": "id",
-              "lookupValue": "={{ $('Parse Cart for Stock Restore').first().json.id }}"
-            }
-          ]
+          "value": "",
+          "mode": "id"
         }
       },
       "id": "a1000000-0000-0000-0000-000000000045",
       "name": "Restore Stock",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4.5,
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
       "position": [
         2200,
         440
-      ],
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "15AvKlr14Qt1VZsU",
-          "name": "Google Sheets account"
-        }
-      }
+      ]
     },
     {
       "parameters": {
@@ -991,39 +738,25 @@
     {
       "parameters": {
         "operation": "append",
-        "documentId": {
+        "base": {
           "__rl": true,
-          "value": "1ENztX5Jw-W8upEOijCgdVbi2_cHfBbOO0Y4O0s6rpuw",
+          "value": "",
           "mode": "id"
         },
-        "sheetName": {
+        "table": {
           "__rl": true,
-          "value": "ERROR_LOG",
-          "mode": "name"
-        },
-        "columns": {
-          "mappingMode": "autoMapInputData",
-          "matchingColumns": [],
-          "schema": [],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": true
-        },
-        "options": {}
+          "value": "",
+          "mode": "id"
+        }
       },
       "id": "a1000000-0000-0000-0000-000000000071",
       "name": "Log Error to Sheet",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4.5,
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
       "position": [
         440,
         700
-      ],
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "15AvKlr14Qt1VZsU",
-          "name": "Google Sheets account"
-        }
-      }
+      ]
     },
     {
       "parameters": {

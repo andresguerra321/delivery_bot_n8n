@@ -1,0 +1,4 @@
+id_producto,stock,nombre,precio,categoria,descripcion
+1,50,Hamburguesa Clasica,15.00,Comida,Deliciosa hamburguesa con queso
+2,30,Papas Fritas,5.00,Acompañamiento,Porción de papas fritas crujientes
+3,100,Refresco,3.00,Bebidas,Bebida carbonatada 500ml

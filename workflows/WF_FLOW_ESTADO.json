@@ -38,43 +38,26 @@
     },
     {
       "parameters": {
-        "operation": "read",
-        "documentId": {
+        "operation": "search",
+        "base": {
           "__rl": true,
-          "value": "1ENztX5Jw-W8upEOijCgdVbi2_cHfBbOO0Y4O0s6rpuw",
+          "value": "",
           "mode": "id"
         },
-        "sheetName": {
+        "table": {
           "__rl": true,
-          "value": "PEDIDOS",
-          "mode": "name"
-        },
-        "filtersUI": {
-          "values": [
-            {
-              "lookupColumn": "id_pedido",
-              "lookupValue": "={{ $('Execute Workflow Trigger').first().json.text ? $('Execute Workflow Trigger').first().json.text.trim() : '' }}"
-            }
-          ]
-        },
-        "options": {
-          "alwaysOutputItem": true
+          "value": "",
+          "mode": "id"
         }
       },
       "id": "read-order",
       "name": "Read Order",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4.5,
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
       "position": [
         650,
         150
       ],
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "15AvKlr14Qt1VZsU",
-          "name": "Google Sheets account"
-        }
-      },
       "onError": "continueErrorOutput"
     },
     {
@@ -105,7 +88,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const order = $input.first().json;\nconst emojis = {\n  'RECIBIDO': '📦',\n  'PREPARACION': '🔥',\n  'EN_CAMINO': '🚚',\n  'LISTO': '✅',\n  'ENTREGADO': '🎉',\n  'CANCELADO': '❌'\n};\nconst emoji = emojis[order.estado] || '📦';\nreturn [{\n  json: {\n    nuevo_estado: 'MENU_PRINCIPAL',\n    mensaje: `📍 *Estado de tu pedido*\\n\\n📦 Orden: #${order.id_pedido}\\n\\nEstado: ${emoji} ${order.estado}`,\n    reply_markup: {\n      inline_keyboard: [\n        [{ text: '⬅️ Menú Principal', callback_data: 'action_back_main' }]\n      ]\n    },\n    session_updates: {\n      estado_fsm: 'MENU_PRINCIPAL',\n      carrito_json: '[]',\n      contexto_json: '{}'\n    }\n  }\n}];"
+        "jsCode": "const order = $input.first().json;\nconst emojis = {\n  'RECIBIDO': '\ud83d\udce6',\n  'PREPARACION': '\ud83d\udd25',\n  'EN_CAMINO': '\ud83d\ude9a',\n  'LISTO': '\u2705',\n  'ENTREGADO': '\ud83c\udf89',\n  'CANCELADO': '\u274c'\n};\nconst emoji = emojis[order.estado] || '\ud83d\udce6';\nreturn [{\n  json: {\n    nuevo_estado: 'MENU_PRINCIPAL',\n    mensaje: `\ud83d\udccd *Estado de tu pedido*\\n\\n\ud83d\udce6 Orden: #${order.id_pedido}\\n\\nEstado: ${emoji} ${order.estado}`,\n    reply_markup: {\n      inline_keyboard: [\n        [{ text: '\u2b05\ufe0f Men\u00fa Principal', callback_data: 'action_back_main' }]\n      ]\n    },\n    session_updates: {\n      estado_fsm: 'MENU_PRINCIPAL',\n      carrito_json: '[]',\n      contexto_json: '{}'\n    }\n  }\n}];"
       },
       "id": "format-found",
       "name": "Format Found",
@@ -118,7 +101,7 @@
     },
     {
       "parameters": {
-        "jsCode": "\nconst inputId = $('Execute Workflow Trigger').first().json.text || 'desconocida';\nreturn [{\n  json: {\n    nuevo_estado: 'MENU_PRINCIPAL',\n    mensaje: `❌ Lo sentimos, no encontramos ninguna orden tuya con el código \"${inputId}\".\\n\\nAsegúrate de haber escrito el código correctamente (ejemplo: ORD-20260604-0001) y que la orden te pertenezca.`,\n    reply_markup: {\n      inline_keyboard: [\n        [{ text: '⬅️ Menú Principal', callback_data: 'action_back_main' }]\n      ]\n    },\n    session_updates: {\n      estado_fsm: 'MENU_PRINCIPAL',\n      carrito_json: '[]',\n      contexto_json: '{}'\n    }\n  }\n}];\n"
+        "jsCode": "\nconst inputId = $('Execute Workflow Trigger').first().json.text || 'desconocida';\nreturn [{\n  json: {\n    nuevo_estado: 'MENU_PRINCIPAL',\n    mensaje: `\u274c Lo sentimos, no encontramos ninguna orden tuya con el c\u00f3digo \"${inputId}\".\\n\\nAseg\u00farate de haber escrito el c\u00f3digo correctamente (ejemplo: ORD-20260604-0001) y que la orden te pertenezca.`,\n    reply_markup: {\n      inline_keyboard: [\n        [{ text: '\u2b05\ufe0f Men\u00fa Principal', callback_data: 'action_back_main' }]\n      ]\n    },\n    session_updates: {\n      estado_fsm: 'MENU_PRINCIPAL',\n      carrito_json: '[]',\n      contexto_json: '{}'\n    }\n  }\n}];\n"
       },
       "id": "format-not-found",
       "name": "Format Not Found",

@@ -43,69 +43,49 @@
     },
     {
       "parameters": {
-        "operation": "read",
-        "documentId": {
+        "operation": "search",
+        "base": {
           "__rl": true,
-          "value": "1ENztX5Jw-W8upEOijCgdVbi2_cHfBbOO0Y4O0s6rpuw",
+          "value": "",
           "mode": "id"
         },
-        "sheetName": {
+        "table": {
           "__rl": true,
-          "value": "PEDIDOS",
-          "mode": "name"
-        },
-        "filtersUI": {
-          "values": []
-        },
-        "options": {}
+          "value": "",
+          "mode": "id"
+        }
       },
       "id": "read-pedidos",
       "name": "Read PEDIDOS",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4.5,
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
       "position": [
         0,
         0
-      ],
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "15AvKlr14Qt1VZsU",
-          "name": "Google Sheets account"
-        }
-      }
+      ]
     },
     {
       "parameters": {
-        "operation": "read",
-        "documentId": {
+        "operation": "search",
+        "base": {
           "__rl": true,
-          "value": "1ENztX5Jw-W8upEOijCgdVbi2_cHfBbOO0Y4O0s6rpuw",
+          "value": "",
           "mode": "id"
         },
-        "sheetName": {
+        "table": {
           "__rl": true,
-          "value": "MENU",
-          "mode": "name"
-        },
-        "filtersUI": {
-          "values": []
-        },
-        "options": {}
+          "value": "",
+          "mode": "id"
+        }
       },
       "id": "read-menu",
       "name": "Read Menu",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4.5,
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
       "position": [
         0,
         320
-      ],
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "15AvKlr14Qt1VZsU",
-          "name": "Google Sheets account"
-        }
-      }
+      ]
     },
     {
       "parameters": {
@@ -182,52 +162,25 @@
     {
       "parameters": {
         "operation": "update",
-        "documentId": {
+        "base": {
           "__rl": true,
-          "value": "1ENztX5Jw-W8upEOijCgdVbi2_cHfBbOO0Y4O0s6rpuw",
+          "value": "",
           "mode": "id"
         },
-        "sheetName": {
+        "table": {
           "__rl": true,
-          "value": "PEDIDOS",
-          "mode": "name"
-        },
-        "columns": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "estado": "CANCELADO"
-          },
-          "matchingColumns": [],
-          "schema": [],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": true
-        },
-        "options": {
-          "cellFormat": "USER_ENTERED"
-        },
-        "filtersUI": {
-          "values": [
-            {
-              "lookupColumn": "id_pedido",
-              "lookupValue": "={{ $json.cancelOrderId }}"
-            }
-          ]
+          "value": "",
+          "mode": "id"
         }
       },
       "id": "cancel-pedidos-node",
       "name": "Cancel PEDIDOS",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4.5,
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
       "position": [
         300,
         0
-      ],
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "15AvKlr14Qt1VZsU",
-          "name": "Google Sheets account"
-        }
-      }
+      ]
     }
   ],
   "connections": {

@@ -98,9 +98,11 @@ La interfaz se construye dinámicamente usando `InlineKeyboardMarkup` de Telegra
 n8n actúa como el backend del sistema, implementando:
 
 - **FSM Router (Máquina de Estados Finitos)**: Cada usuario tiene un estado que determina cómo se procesa su siguiente mensaje. Los estados incluyen `IDLE`, `MENU_CAT`, `MENU_PROD`, `CARRITO`, `CONFIRMAR`, entre otros.
-- **Validador de Stock**: Antes de confirmar un pedido, verifica disponibilidad usando optimistic locking con campo `version` para prevenir race conditions.
-- **Calculadora de Precios**: Suma subtotales, aplica tasa de impuesto configurable, y genera desglose detallado.
-- **Motor de Notificaciones**: Envía mensajes al usuario (confirmación, cambios de estado) y al grupo de cocina (nuevos pedidos, alertas).
+- **Validador de Stock**: Antes de confirmar un pedido, verifica disponibilidad. Si falla por falta de stock, envía una alerta automática a la cocina y notifica al usuario.
+- **Motor de Recomendaciones (Cross-Selling)**: Analiza el historial de pedidos en tiempo real para sugerir automáticamente productos que frecuentemente se compran juntos con los elementos del carrito.
+- **Gestión de Logística y Pagos**: Permite selección de método de entrega (sumando costo de envío si aplica) y distintos métodos de pago (Efectivo, Tarjeta, Transferencia).
+- **Cálculo Dinámico de ETA**: Calcula el tiempo estimado de entrega basado en la cantidad actual de pedidos activos en cola de preparación.
+- **Manejador Global de Errores**: Un flujo dedicado que atrapa fallos imprevistos, evitando bloqueos y ofreciendo una salida elegante al usuario.
 
 ### Capa 3: Persistencia de Datos (Google Sheets)
 
@@ -352,6 +354,8 @@ Registro maestro de todos los pedidos realizados.
 | `hora` | Time | `07:30:00` | Hora de creación del pedido (HH:MM:SS) |
 | `hora_entrega` | Time | `07:45:00` | Hora de entrega (se llena cuando estado = ENTREGADO) |
 | `notas` | String | `Sin mayonesa` | Notas adicionales del usuario (opcional) |
+| `tipo_entrega` | String | `Delivery` | Preferencia de entrega: Delivery o Pickup |
+| `metodo_pago` | String | `Tarjeta` | Método de pago: Efectivo, Tarjeta o Transferencia |
 
 ### Hoja: `USUARIOS`
 
@@ -519,6 +523,14 @@ Mensaje entrante
 3. Guarda el reporte en `REPORTES_CACHE`
 4. Envía resumen al grupo de administradores
 
+### WF_ERROR_HANDLER
+
+**Gestión de errores global del sistema**. Configurado en los ajustes ("Settings") de cada flujo principal como su "Error Workflow":
+
+- Atrapa cualquier fallo técnico, caída de API o error de timeout en toda la plataforma.
+- Previene que el bot se quede en silencio o "colgado" devolviendo un mensaje elegante: `¡Ups! Tuvimos un problema técnico 🛠️...`.
+- Permite que el usuario pueda presionar un botón para regresar al menú principal y reintentar, manteniendo el flujo fluido.
+
 ### WF_SESSION_CLEANUP
 
 **Limpieza automática de sesiones**. Se ejecuta vía CRON cada 15 minutos:
@@ -593,9 +605,10 @@ Mensaje entrante
 - [x] **v1.0**: Flujo completo de pedidos (menú → carrito → confirmación)
 - [x] **v1.1**: Panel de administración y notificaciones a cocina
 - [ ] **v1.2**: Reportes automáticos y métricas de negocio
-- [ ] **v1.3**: Sistema de puntos de lealtad con canjeo de productos
-- [ ] **v2.0**: Integración con métodos de pago (MercadoPago / Stripe)
-- [ ] **v2.1**: Menú dinámico por horario (desayuno, almuerzo, snacks)
+- [x] **v1.3**: Gestión global de fallos (`WF_ERROR_HANDLER`)
+- [x] **v2.0**: Integración de logística (Delivery/Pickup) y pasarela de métodos de pago.
+- [x] **v2.1**: Motor inteligente de Cross-Selling (Machine Learning de co-ocurrencia) y ETA dinámico por cola en cocina.
+- [ ] **v2.2**: Sistema de favoritos y reordenación rápida.
 - [ ] **v2.2**: Sistema de favoritos y reordenación rápida
 - [ ] **v3.0**: Migración a base de datos real (Supabase / PostgreSQL)
 

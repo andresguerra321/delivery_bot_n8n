@@ -1,0 +1,37 @@
+{
+  "name": "WF_FLOW_INVALID",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "invalid-trigger",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [ 0, 0 ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const sessionData = $input.first().json;\nreturn [{\n  json: {\n    mensaje: '🤖 *Opción no reconocida.*\\n\\nPor favor, usa los comandos del menú o los botones interactivos para continuar.',\n    session_updates: {\n      estado_fsm: sessionData.estado_fsm || 'MENU_PRINCIPAL',\n      carrito_json: sessionData.carrito_json || '[]',\n      contexto_json: sessionData.contexto_json || '{}'\n    }\n  }\n}];"
+      },
+      "id": "invalid-code",
+      "name": "Format Invalid Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [ 200, 0 ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Format Invalid Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

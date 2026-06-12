@@ -23,33 +23,26 @@
     },
     {
       "parameters": {
-        "operation": "read",
-        "documentId": {
+        "operation": "search",
+        "base": {
           "__rl": true,
-          "value": "1ENztX5Jw-W8upEOijCgdVbi2_cHfBbOO0Y4O0s6rpuw",
+          "value": "",
           "mode": "id"
         },
-        "sheetName": {
+        "table": {
           "__rl": true,
-          "value": "SESSIONS",
-          "mode": "name"
-        },
-        "options": {}
+          "value": "",
+          "mode": "id"
+        }
       },
       "id": "c1000000-0000-0000-0000-000000000002",
       "name": "Read All Sessions",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4.5,
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
       "position": [
         440,
         300
-      ],
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "15AvKlr14Qt1VZsU",
-          "name": "Google Sheets account"
-        }
-      }
+      ]
     },
     {
       "parameters": {
@@ -165,140 +158,77 @@
     },
     {
       "parameters": {
-        "operation": "read",
-        "documentId": {
+        "operation": "search",
+        "base": {
           "__rl": true,
-          "value": "1ENztX5Jw-W8upEOijCgdVbi2_cHfBbOO0Y4O0s6rpuw",
+          "value": "",
           "mode": "id"
         },
-        "sheetName": {
+        "table": {
           "__rl": true,
-          "value": "MENU",
-          "mode": "name"
-        },
-        "filtersUI": {
-          "values": [
-            {
-              "lookupColumn": "id",
-              "lookupValue": "={{ $json.item_id }}"
-            }
-          ]
-        },
-        "options": {}
+          "value": "",
+          "mode": "id"
+        }
       },
       "id": "c1000000-0000-0000-0000-000000000008",
       "name": "Read Menu Stock",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4.5,
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
       "position": [
         1760,
         100
-      ],
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "15AvKlr14Qt1VZsU",
-          "name": "Google Sheets account"
-        }
-      }
+      ]
     },
     {
       "parameters": {
         "operation": "update",
-        "documentId": {
+        "base": {
           "__rl": true,
-          "value": "YOUR_SPREADSHEET_ID_HERE",
+          "value": "",
           "mode": "id"
         },
-        "sheetName": {
+        "table": {
           "__rl": true,
-          "value": "MENU",
-          "mode": "name"
-        },
-        "columns": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "stock": "={{ parseInt($('Read Menu Stock').first().json.stock || '0') + parseInt($('Parse Cart Items').first().json.cantidad_a_restaurar || '0') }}"
-          }
-        },
-        "options": {
-          "cellFormat": "USER_ENTERED"
-        },
-        "filtersUI": {
-          "values": [
-            {
-              "lookupColumn": "id",
-              "lookupValue": "={{ $('Parse Cart Items').first().json.item_id }}"
-            }
-          ]
+          "value": "",
+          "mode": "id"
         }
       },
       "id": "c1000000-0000-0000-0000-000000000009",
       "name": "Restore Stock",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4.5,
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
       "position": [
         1980,
         100
-      ],
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "15AvKlr14Qt1VZsU",
-          "name": "Google Sheets account"
-        }
-      }
+      ]
     },
     {
       "parameters": {
         "operation": "update",
-        "documentId": {
+        "base": {
           "__rl": true,
-          "value": "YOUR_SPREADSHEET_ID_HERE",
+          "value": "",
           "mode": "id"
         },
-        "sheetName": {
+        "table": {
           "__rl": true,
-          "value": "SESSIONS",
-          "mode": "name"
-        },
-        "columns": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "estado_fsm": "IDLE",
-            "carrito_json": "[]",
-            "contexto_json": "{}"
-          }
-        },
-        "options": {
-          "cellFormat": "USER_ENTERED"
-        },
-        "filtersUI": {
-          "values": [
-            {
-              "lookupColumn": "telegram_id",
-              "lookupValue": "={{ $('Loop Over Expired').first().json.telegram_id }}"
-            }
-          ]
+          "value": "",
+          "mode": "id"
         }
       },
       "id": "c1000000-0000-0000-0000-000000000010",
       "name": "Reset Session",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4.5,
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
       "position": [
         1540,
         380
-      ],
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "15AvKlr14Qt1VZsU",
-          "name": "Google Sheets account"
-        }
-      }
+      ]
     },
     {
       "parameters": {
         "chatId": "={{ $('Loop Over Expired').first().json.telegram_id }}",
-        "text": "⏰ Tu sesión expiró por inactividad. Escribe /start para comenzar de nuevo.",
+        "text": "\u23f0 Tu sesi\u00f3n expir\u00f3 por inactividad. Escribe /start para comenzar de nuevo.",
         "additionalFields": {}
       },
       "id": "c1000000-0000-0000-0000-000000000011",
@@ -319,44 +249,29 @@
     {
       "parameters": {
         "operation": "append",
-        "documentId": {
+        "base": {
           "__rl": true,
-          "value": "YOUR_SPREADSHEET_ID_HERE",
+          "value": "",
           "mode": "id"
         },
-        "sheetName": {
+        "table": {
           "__rl": true,
-          "value": "ERROR_LOG",
-          "mode": "name"
-        },
-        "columns": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "tipo": "SESSION_TIMEOUT",
-            "detalle": "=Session expired for telegram_id={{ $('Loop Over Expired').first().json.telegram_id }}",
-            "timestamp": "={{ new Date().toISOString() }}"
-          }
-        },
-        "options": {}
+          "value": "",
+          "mode": "id"
+        }
       },
       "id": "c1000000-0000-0000-0000-000000000012",
       "name": "Log Timeout",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4.5,
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
       "position": [
         1980,
         380
-      ],
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "15AvKlr14Qt1VZsU",
-          "name": "Google Sheets account"
-        }
-      }
+      ]
     },
     {
       "parameters": {
-        "jsCode": "// Summary: count how many sessions were cleaned\nconst items = $('Filter Expired').all();\nconst cleaned = items.filter(i => i.json.has_expired === true).length;\nconst timestamp = new Date().toISOString();\n\nconsole.log(`[SESSION_CLEANUP] ${timestamp} — Cleaned ${cleaned} expired sessions`);\n\nreturn [{\n  json: {\n    message: `Session cleanup completed. ${cleaned} expired sessions cleaned.`,\n    cleaned_count: cleaned,\n    timestamp\n  }\n}];"
+        "jsCode": "// Summary: count how many sessions were cleaned\nconst items = $('Filter Expired').all();\nconst cleaned = items.filter(i => i.json.has_expired === true).length;\nconst timestamp = new Date().toISOString();\n\nconsole.log(`[SESSION_CLEANUP] ${timestamp} \u2014 Cleaned ${cleaned} expired sessions`);\n\nreturn [{\n  json: {\n    message: `Session cleanup completed. ${cleaned} expired sessions cleaned.`,\n    cleaned_count: cleaned,\n    timestamp\n  }\n}];"
       },
       "id": "c1000000-0000-0000-0000-000000000013",
       "name": "Summary Log",

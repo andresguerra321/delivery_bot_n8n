@@ -8,26 +8,94 @@
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1,
       "position": [
-        250,
+        0,
         300
       ]
     },
     {
       "parameters": {
-        "jsCode": "const inputData = $('Execute Workflow Trigger').first().json;\nconst cb = inputData.callback_data || '';\nlet cart = [];\ntry { cart = JSON.parse(inputData.carrito_json || '[]'); } catch(e) {}\n\nif (cart.length === 0) {\n  return [{\n    json: {\n      mensaje: '🛒 Tu carrito está vacío.',\n      reply_markup: { inline_keyboard: [[{ text: '🛒 Ver Menú', callback_data: 'cat_ver_todas' }]] },\n      session_updates: { estado_fsm: 'MENU_PRINCIPAL', carrito_json: '[]', contexto_json: '{}' }\n    }\n  }];\n}\n\nlet cartText = '🛒 *Tu Carrito*\\n\\n';\nlet subtotal = 0;\ncart.forEach((item, i) => {\n  const lineTotal = item.qty * item.precio;\n  subtotal += lineTotal;\n  cartText += (i + 1) + '. ' + item.nombre + ' x' + item.qty + ' — $' + lineTotal.toFixed(2) + '\\n';\n});\n\nif (cb === 'confirm_yes') {\n  const iva = subtotal * 0.12;\n  const total = subtotal + iva;\n  cartText += '\\n💰 Subtotal: $' + subtotal.toFixed(2);\n  cartText += '\\n📊 IVA (12%): $' + iva.toFixed(2);\n  cartText += '\\n💵 *Total a pagar: $' + total.toFixed(2) + '*';\n  cartText += '\\n\\n¿Deseas realizar este pedido?';\n  return [{\n    json: {\n      mensaje: cartText,\n      reply_markup: { inline_keyboard: [\n        [{ text: '✅ Sí, realizar pedido', callback_data: 'final_confirm' }],\n        [{ text: '➕ Agregar más', callback_data: 'cat_ver_todas' }],\n        [{ text: '❌ Cancelar pedido', callback_data: 'main_menu' }]\n      ]},\n      session_updates: { estado_fsm: 'CARRITO', carrito_json: JSON.stringify(cart), contexto_json: '{}' }\n    }\n  }];\n}\n\ncartText += '\\n💰 Subtotal: $' + subtotal.toFixed(2);\nreturn [{\n  json: {\n    mensaje: cartText,\n    reply_markup: { inline_keyboard: [\n      [{ text: '➕ Agregar más', callback_data: 'cat_ver_todas' }],\n      [{ text: '✅ Confirmar Pedido', callback_data: 'confirm_yes' }]\n    ]},\n    session_updates: { estado_fsm: 'CARRITO', carrito_json: JSON.stringify(cart), contexto_json: '{}' }\n  }\n}];"
+        "operation": "append",
+        "base": {
+          "__rl": true,
+          "value": "",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "",
+          "mode": "id"
+        }
+      },
+      "id": "read-menu-cart",
+      "name": "Read Menu",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        200,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "base": {
+          "__rl": true,
+          "value": "",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "",
+          "mode": "id"
+        }
+      },
+      "id": "read-pedidos-cart",
+      "name": "Read PEDIDOS",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        400,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputData = $('Execute Workflow Trigger').first().json;\nconst cb = inputData.callback_data || '';\nlet cart = [];\ntry { cart = JSON.parse(inputData.carrito_json || '[]'); } catch(e) {}\nlet contexto = {};\ntry { contexto = JSON.parse(inputData.contexto_json || '{}'); } catch(e) {}\n\nif (cart.length === 0) {\n  return [{\n    json: {\n      mensaje: '\ud83d\uded2 Tu carrito est\u00e1 vac\u00edo.',\n      reply_markup: { inline_keyboard: [[{ text: '\ud83d\uded2 Ver Men\u00fa', callback_data: 'cat_ver_todas' }]] },\n      session_updates: { estado_fsm: 'MENU_PRINCIPAL', carrito_json: '[]', contexto_json: '{}' }\n    }\n  }];\n}\n\nlet cartText = '\ud83d\uded2 *Tu Carrito*\\n\\n';\nlet subtotal = 0;\ncart.forEach((item, i) => {\n  const lineTotal = item.qty * item.precio;\n  subtotal += lineTotal;\n  cartText += (i + 1) + '. ' + item.nombre + ' x' + item.qty + ' \u2014 $' + lineTotal.toFixed(2) + '\\n';\n});\ncartText += '\\n\ud83d\udcb0 Subtotal: $' + subtotal.toFixed(2);\n\nif (cb === 'confirm_yes') {\n  cartText += '\\n\\n\ud83d\udef5 \u00bfC\u00f3mo deseas recibir tu pedido?';\n  return [{\n    json: {\n      mensaje: cartText,\n      reply_markup: { inline_keyboard: [\n        [{ text: '\ud83d\udef5 Env\u00edo a Domicilio (+$2.00)', callback_data: 'deliv_yes' }],\n        [{ text: '\ud83c\udfec Recoger en Local ($0.00)', callback_data: 'deliv_no' }],\n        [{ text: '\u274c Cancelar', callback_data: 'main_menu' }]\n      ]},\n      session_updates: { estado_fsm: 'CARRITO', carrito_json: JSON.stringify(cart), contexto_json: JSON.stringify(contexto) }\n    }\n  }];\n} else if (cb === 'deliv_yes' || cb === 'deliv_no') {\n  contexto.tipo_entrega = (cb === 'deliv_yes') ? 'Delivery' : 'Pickup';\n  let totalDesc = (cb === 'deliv_yes') ? '\\n\ud83d\udce6 Env\u00edo: $2.00' : '';\n  \n  cartText += totalDesc + '\\n\\n\ud83d\udcb3 Selecciona tu m\u00e9todo de pago:';\n  return [{\n    json: {\n      mensaje: cartText,\n      reply_markup: { inline_keyboard: [\n        [{ text: '\ud83d\udcb5 Efectivo (Al entregar)', callback_data: 'pay_cash' }],\n        [{ text: '\ud83d\udcb3 Tarjeta (Dat\u00e1fono)', callback_data: 'pay_card' }],\n        [{ text: '\ud83d\udcf1 Transferencia / App', callback_data: 'pay_trans' }],\n        [{ text: '\u2b05\ufe0f Volver', callback_data: 'confirm_yes' }]\n      ]},\n      session_updates: { estado_fsm: 'CARRITO', carrito_json: JSON.stringify(cart), contexto_json: JSON.stringify(contexto) }\n    }\n  }];\n} else if (cb.startsWith('pay_')) {\n  if (cb === 'pay_cash') contexto.metodo_pago = 'Efectivo';\n  if (cb === 'pay_card') contexto.metodo_pago = 'Tarjeta';\n  if (cb === 'pay_trans') contexto.metodo_pago = 'Transferencia';\n\n  const envio = contexto.tipo_entrega === 'Delivery' ? 2.00 : 0.00;\n  const iva = (subtotal + envio) * 0.12;\n  const total = subtotal + envio + iva;\n  \n  cartText += '\\n\ud83d\udce6 Env\u00edo: $' + envio.toFixed(2);\n  cartText += '\\n\ud83d\udcca IVA (12%): $' + iva.toFixed(2);\n  cartText += '\\n\ud83d\udcb5 *Total a pagar: $' + total.toFixed(2) + '*';\n  cartText += '\\n\\n\ud83d\udccd Entrega: ' + contexto.tipo_entrega;\n  cartText += '\\n\ud83d\udcb3 Pago: ' + contexto.metodo_pago;\n  \n  if (contexto.metodo_pago === 'Transferencia') {\n    cartText += '\\n\\n\u26a0\ufe0f *Atenci\u00f3n:* Para transferencias, deber\u00e1s enviar tu comprobante al administrador al terminar.';\n  }\n  \n  cartText += '\\n\\n\u00bfDeseas realizar este pedido?';\n  return [{\n    json: {\n      mensaje: cartText,\n      reply_markup: { inline_keyboard: [\n        [{ text: '\u2705 S\u00ed, enviar pedido', callback_data: 'final_confirm' }],\n        [{ text: '\u2b05\ufe0f Cambiar Pago', callback_data: (contexto.tipo_entrega === 'Delivery' ? 'deliv_yes' : 'deliv_no') }],\n        [{ text: '\u274c Cancelar', callback_data: 'main_menu' }]\n      ]},\n      session_updates: { estado_fsm: 'CARRITO', carrito_json: JSON.stringify(cart), contexto_json: JSON.stringify(contexto) }\n    }\n  }];\n}\n\nlet recommended = null;\ntry {\n  const menuItems = $('Read Menu').all().map(i => i.json);\n  const allOrders = $('Read PEDIDOS').all().map(i => i.json.detalles_pedido || '');\n  \n  let bestMatch = null;\n  let maxCount = 0;\n\n  menuItems.forEach(menuItem => {\n    if (parseInt(menuItem.stock) <= 0 || menuItem.activo !== 'TRUE') return;\n    if (cart.find(c => c.id === menuItem.id_producto)) return;\n    \n    let count = 0;\n    allOrders.forEach(orderStr => {\n      let hasCartItem = cart.some(c => orderStr.includes(c.nombre));\n      if (hasCartItem && orderStr.includes(menuItem.nombre)) {\n        count++;\n      }\n    });\n    \n    if (count > maxCount) {\n      maxCount = count;\n      bestMatch = menuItem;\n    }\n  });\n\n  if (!bestMatch) {\n    const cartCategories = cart.map(item => {\n      const m = menuItems.find(x => x.id_producto === item.id);\n      return m ? m.categoria : '';\n    });\n    let cand = menuItems.find(m => !cartCategories.includes(m.categoria) && parseInt(m.stock) > 0 && m.activo === 'TRUE');\n    if (cand) bestMatch = cand;\n  }\n  if (bestMatch) recommended = bestMatch;\n} catch(e) { }\n\nif (recommended) {\n  cartText += '\\n\\n\ud83d\udca1 *Sugerencia Inteligente:*\\nLos clientes que llevan tus productos tambi\u00e9n compran **' + recommended.nombre + '** por solo $' + parseFloat(recommended.precio).toFixed(2) + '.';\n  return [{\n    json: {\n      mensaje: cartText,\n      reply_markup: { inline_keyboard: [\n        [{ text: '\u2795 Agregar ' + recommended.nombre, callback_data: 'add_' + recommended.id_producto }],\n        [{ text: '\ud83d\udcb3 Ir a Pagar', callback_data: 'confirm_yes' }],\n        [{ text: '\u2795 Ver m\u00e1s men\u00fa', callback_data: 'cat_ver_todas' }]\n      ]},\n      session_updates: { estado_fsm: 'CARRITO', carrito_json: JSON.stringify(cart), contexto_json: JSON.stringify(contexto) }\n    }\n  }];\n} else {\n  return [{\n    json: {\n      mensaje: cartText,\n      reply_markup: { inline_keyboard: [\n        [{ text: '\ud83d\udcb3 Ir a Pagar', callback_data: 'confirm_yes' }],\n        [{ text: '\u2795 Agregar m\u00e1s', callback_data: 'cat_ver_todas' }]\n      ]},\n      session_updates: { estado_fsm: 'CARRITO', carrito_json: JSON.stringify(cart), contexto_json: JSON.stringify(contexto) }\n    }\n  }];\n}"
       },
       "id": "cart-format",
       "name": "Format Cart",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        500,
+        600,
         300
       ]
     }
   ],
   "connections": {
     "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Read Menu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Menu": {
+      "main": [
+        [
+          {
+            "node": "Read PEDIDOS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read PEDIDOS": {
       "main": [
         [
           {
@@ -43,5 +111,6 @@
   "settings": {
     "executionOrder": "v1"
   },
+  "id": "bNsLJTYvlHImBHrS",
   "tags": []
 }

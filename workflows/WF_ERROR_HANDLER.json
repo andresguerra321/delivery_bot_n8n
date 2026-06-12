@@ -1,0 +1,191 @@
+{
+  "name": "WF_ERROR_HANDLER",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "e0000000-0000-0000-0000-000000000001",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        200,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const err = $execution.error || {};\nconst wf = $execution.workflow || {};\nconst errorMsg = err.message || 'Unknown error';\nconst workflowName = wf.name || 'Unknown Workflow';\nconst timestamp = new Date().toISOString();\n\n// Try to find a user telegram ID or chat ID if it exists in the last node execution data\nlet telegramId = 'N/A';\nlet chatId = 'N/A';\ntry {\n  const lastNodeData = $execution.lastNodeExecuted?.data?.main?.[0]?.[0]?.json || {};\n  if (lastNodeData.telegram_id) telegramId = lastNodeData.telegram_id;\n  if (lastNodeData.chat_id) chatId = lastNodeData.chat_id;\n} catch(e) {}\n\nreturn [{\n  json: {\n    timestamp: timestamp,\n    telegram_id: telegramId,\n    tipo_error: 'WORKFLOW_ERROR',\n    detalle: `Workflow: ${workflowName} | Error: ${errorMsg}`,\n    resuelto: 'FALSE',\n    chat_id: chatId\n  }\n}];"
+      },
+      "id": "e0000000-0000-0000-0000-000000000002",
+      "name": "Extract Error Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        420,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "base": {
+          "__rl": true,
+          "value": "",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "",
+          "mode": "id"
+        }
+      },
+      "id": "e0000000-0000-0000-0000-000000000003",
+      "name": "Log to Google Sheets",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        640,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $env.ADMIN_CHAT_ID || '' }}",
+        "text": "=\u26a0\ufe0f *ALERTA CR\u00cdTICA DE SISTEMA* \u26a0\ufe0f\n\n*Workflow:* {{ $json.detalle }}\n*Usuario afectado:* {{ $json.telegram_id }}\n*Hora:* {{ $json.timestamp }}",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "e0000000-0000-0000-0000-000000000004",
+      "name": "Notify Admin",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        860,
+        200
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "ZK5tkFfqOriXG3BO",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.chat_id }}",
+              "operation": "notEqual",
+              "value2": "N/A"
+            }
+          ]
+        }
+      },
+      "id": "e0000000-0000-0000-0000-000000000005",
+      "name": "Has Chat ID?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        860,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chat_id }}",
+        "text": "\ud83e\udd16 *Disculpa, tuvimos un problema t\u00e9cnico interno al procesar tu solicitud.* \n\nPor favor, escribe /start para reiniciar e intenta de nuevo.",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "e0000000-0000-0000-0000-000000000006",
+      "name": "Notify User",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1080,
+        400
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "ZK5tkFfqOriXG3BO",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Extract Error Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Error Data": {
+      "main": [
+        [
+          {
+            "node": "Log to Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log to Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Notify Admin",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Has Chat ID?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Chat ID?": {
+      "main": [
+        [
+          {
+            "node": "Notify User",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "meta": {
+    "instanceId": "deliverybot-error-handler"
+  },
+  "tags": [
+    {
+      "name": "DeliveryBot",
+      "createdAt": "2026-06-04T00:00:00.000Z",
+      "updatedAt": "2026-06-04T00:00:00.000Z"
+    },
+    {
+      "name": "ErrorHandling",
+      "createdAt": "2026-06-04T00:00:00.000Z",
+      "updatedAt": "2026-06-04T00:00:00.000Z"
+    }
+  ]
+}

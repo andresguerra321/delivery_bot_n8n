@@ -36,83 +36,49 @@
     },
     {
       "parameters": {
-        "operation": "read",
-        "documentId": {
+        "operation": "search",
+        "base": {
           "__rl": true,
-          "value": "1ENztX5Jw-W8upEOijCgdVbi2_cHfBbOO0Y4O0s6rpuw",
+          "value": "",
           "mode": "id"
         },
-        "sheetName": {
+        "table": {
           "__rl": true,
-          "value": "PEDIDOS",
-          "mode": "name"
-        },
-        "filtersUI": {
-          "values": [
-            {
-              "lookupColumn": "fecha",
-              "lookupValue": "={{ $json.fecha_hoy }}"
-            },
-            {
-              "lookupColumn": "estado",
-              "lookupValue": "ENTREGADO"
-            }
-          ]
-        },
-        "options": {}
+          "value": "",
+          "mode": "id"
+        }
       },
       "id": "b1000000-0000-0000-0000-000000000003",
       "name": "Read Today Orders",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4.5,
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
       "position": [
         660,
         200
-      ],
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "15AvKlr14Qt1VZsU",
-          "name": "Google Sheets account"
-        }
-      }
+      ]
     },
     {
       "parameters": {
-        "operation": "read",
-        "documentId": {
+        "operation": "search",
+        "base": {
           "__rl": true,
-          "value": "1ENztX5Jw-W8upEOijCgdVbi2_cHfBbOO0Y4O0s6rpuw",
+          "value": "",
           "mode": "id"
         },
-        "sheetName": {
+        "table": {
           "__rl": true,
-          "value": "DETALLE_LINEAS",
-          "mode": "name"
-        },
-        "filtersUI": {
-          "values": [
-            {
-              "lookupColumn": "fecha",
-              "lookupValue": "={{ $('Get Today Date').first().json.fecha_hoy }}"
-            }
-          ]
-        },
-        "options": {}
+          "value": "",
+          "mode": "id"
+        }
       },
       "id": "b1000000-0000-0000-0000-000000000004",
       "name": "Read Detail Lines",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4.5,
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
       "position": [
         660,
         400
-      ],
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "15AvKlr14Qt1VZsU",
-          "name": "Google Sheets account"
-        }
-      }
+      ]
     },
     {
       "parameters": {
@@ -130,65 +96,48 @@
     {
       "parameters": {
         "operation": "append",
-        "documentId": {
+        "base": {
           "__rl": true,
-          "value": "1ENztX5Jw-W8upEOijCgdVbi2_cHfBbOO0Y4O0s6rpuw",
+          "value": "",
           "mode": "id"
         },
-        "sheetName": {
+        "table": {
           "__rl": true,
-          "value": "REPORTES_CACHE",
-          "mode": "name"
-        },
-        "columns": {
-          "mappingMode": "autoMapInputData"
-        },
-        "options": {}
+          "value": "",
+          "mode": "id"
+        }
       },
       "id": "b1000000-0000-0000-0000-000000000006",
       "name": "Write to REPORTES_CACHE",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4.5,
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
       "position": [
         1100,
         300
-      ],
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "15AvKlr14Qt1VZsU",
-          "name": "Google Sheets account"
-        }
-      }
+      ]
     },
     {
       "parameters": {
-        "operation": "read",
-        "documentId": {
+        "operation": "search",
+        "base": {
           "__rl": true,
-          "value": "1ENztX5Jw-W8upEOijCgdVbi2_cHfBbOO0Y4O0s6rpuw",
+          "value": "",
           "mode": "id"
         },
-        "sheetName": {
+        "table": {
           "__rl": true,
-          "value": "MENU",
-          "mode": "name"
-        },
-        "options": {}
+          "value": "",
+          "mode": "id"
+        }
       },
       "id": "b1000000-0000-0000-0000-000000000007",
       "name": "Read All Menu Items",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4.5,
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
       "position": [
         1320,
         300
-      ],
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "15AvKlr14Qt1VZsU",
-          "name": "Google Sheets account"
-        }
-      }
+      ]
     },
     {
       "parameters": {
@@ -205,7 +154,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Format the daily report message\nconst metrics = $('Calculate Metrics').first().json;\nconst lowStockData = $('Check Low Stock').first().json.low_stock_items;\n\nlet lowStockSection = '';\nif (lowStockData && lowStockData.length > 0) {\n  const lines = lowStockData.map(item => `• ${item.nombre}: ${item.stock} restantes`);\n  lowStockSection = `\\n\\n⚠️ *Productos con Stock Bajo:*\\n${lines.join('\\n')}`;\n} else {\n  lowStockSection = '\\n\\n✅ *Stock:* Todos los productos tienen stock suficiente.';\n}\n\nconst report = `📊 *REPORTE DIARIO — ${metrics.fecha}*\\n\\n` +\n  `💰 Total Vendido: $${metrics.total_ventas}\\n` +\n  `📦 Pedidos Completados: ${metrics.num_pedidos}\\n` +\n  `⭐ Producto Estrella: ${metrics.producto_estrella} (${metrics.cantidad_estrella} uds)\\n` +\n  `🕐 Hora Pico: ${metrics.hora_pico}` +\n  lowStockSection +\n  `\\n\\n🕐 _Generado: ${metrics.generado_en}_`;\n\nreturn [{ json: { report } }];"
+        "jsCode": "// Format the daily report message\nconst metrics = $('Calculate Metrics').first().json;\nconst lowStockData = $('Check Low Stock').first().json.low_stock_items;\n\nlet lowStockSection = '';\nif (lowStockData && lowStockData.length > 0) {\n  const lines = lowStockData.map(item => `\u2022 ${item.nombre}: ${item.stock} restantes`);\n  lowStockSection = `\\n\\n\u26a0\ufe0f *Productos con Stock Bajo:*\\n${lines.join('\\n')}`;\n} else {\n  lowStockSection = '\\n\\n\u2705 *Stock:* Todos los productos tienen stock suficiente.';\n}\n\nconst report = `\ud83d\udcca *REPORTE DIARIO \u2014 ${metrics.fecha}*\\n\\n` +\n  `\ud83d\udcb0 Total Vendido: $${metrics.total_ventas}\\n` +\n  `\ud83d\udce6 Pedidos Completados: ${metrics.num_pedidos}\\n` +\n  `\u2b50 Producto Estrella: ${metrics.producto_estrella} (${metrics.cantidad_estrella} uds)\\n` +\n  `\ud83d\udd50 Hora Pico: ${metrics.hora_pico}` +\n  lowStockSection +\n  `\\n\\n\ud83d\udd50 _Generado: ${metrics.generado_en}_`;\n\nreturn [{ json: { report } }];"
       },
       "id": "b1000000-0000-0000-0000-000000000009",
       "name": "Format Report",
